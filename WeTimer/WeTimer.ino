@@ -139,8 +139,8 @@ void setup() {
   pinMode(GND_SWITCH, OUTPUT);
   digitalWrite(GND_SWITCH, LOW);
   
-  pinMode(BUILTIN_LED, OUTPUT);
-  digitalWrite(BUILTIN_LED, ledState);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, ledState);
 
   // Connection Acces Point si SSID défini
   if (cli_ssid[0] != '\0') {
@@ -208,7 +208,7 @@ void setup() {
   #endif
 
   ledState = LOW;
-  digitalWrite(BUILTIN_LED, ledState);
+  digitalWrite(LED_BUILTIN, ledState);
 
 }
 
@@ -309,11 +309,11 @@ void loop() {
       } else {
         ledState = LOW;
       }
-      digitalWrite(BUILTIN_LED, ledState);
+      digitalWrite(LED_BUILTIN, ledState);
     }
   } else {
     ledState = HIGH;
-    digitalWrite(BUILTIN_LED, ledState);
+    digitalWrite(LED_BUILTIN, ledState);
   }
 
 }

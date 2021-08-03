@@ -140,10 +140,18 @@ void handleRoot() {
   );
   //--------------------------------------------------------------------------------
   Page += F("<pre style=\"text-align: left;\">\n");
-  Page += F("Délai armement    = ") + String(delaiArmement) + F(" secondes\n");
-  Page += F("Durée de vol      = ") + String(tempsVol) + F(" secondes\n");
-  Page += F("Pos. servo départ = ") + String(servoDepart) + F(" micro secondes\n");
-  Page += F("Pos. servo DT     = ") + String(servoDT) + F(" micro secondes\n");
+  Page += F("Délai armement    = ");
+  Page += String(delaiArmement);
+  Page += F(" secondes\n");
+  Page += F("Durée de vol      = ");
+  Page += String(tempsVol);
+  Page += F(" secondes\n");
+  Page += F("Pos. servo départ = ");
+  Page += String(servoDepart);
+  Page += F(" micro secondes\n");
+  Page += F("Pos. servo DT     = ");
+  Page += String(servoDT);
+  Page += F(" micro secondes\n");
   Page += F("</pre>\n");
   //--------------------------------------------------------------------------------
   Page += F(
