@@ -37,7 +37,7 @@
   #include "handleWiFi.h"
 
   // Pour debug sur port série
-  #define debug
+  //#define debug
   
   #define ORG_NAME           "fra589"
   #define APP_NAME           "WeTimer\0"
