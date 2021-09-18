@@ -37,70 +37,91 @@
   #include "handleWiFi.h"
 
   // Pour debug sur port série
-  //#define debug
+  #define debug
   
   #define ORG_NAME           "fra589"
-  #define APP_NAME           "WeTimer"
-  #define APP_VERSION_STRING "v0.8.0"
-  #define APP_VERSION_DATE   "20210614"
+  #define APP_NAME           "WeTimer\0"
+  #define APP_VERSION_STRING "v0.9.0"
+  #define APP_VERSION_DATE   "20210918"
   
   
+  //----------------------------------------------------------------------------------------------------
+  // Adresses EEProm pour sauvegarde des paramètres
+  //----------------------------------------------------------------------------------------------------
   #define EEPROM_LENGTH 512
   //----------------------------------------------------------------------------------------------------
-  // Adresse EEProm des paramètres
-  //----------------------------------------------------------------------------------------------------
-  #define ADDR_TEMPS_ARMEMENT  0
-  #define ADDR_TEMPS_VOL       2
-  #define ADDR_SERVO_DEPART    4
-  #define ADDR_SERVO_DT        6
-  #define ADDR_CLI_SSID        8
-  #define ADDR_CLI_PWD        40 //   8 + 32
-  #define ADDR_AP_SSID       103 //  40 + 63
-  #define ADDR_AP_PWD        135 // 103 + 32
+  #define ADDR_TEMPS_ARMEMENT       0
+  #define ADDR_TEMPS_VOL            2
+  #define ADDR_SERVO_STAB_VOL       4
+  #define ADDR_SERVO_STAB_TREUIL    6
+  #define ADDR_SERVO_STAB_DT        8
+  #define ADDR_SERVO_DERIVE_VOL    10
+  #define ADDR_SERVO_DERIVE_TREUIL 12
+  #define ADDR_CLI_SSID            14
+  #define ADDR_CLI_PWD             46 //  14 + 32
+  #define ADDR_AP_SSID            109 //  46 + 63
+  #define ADDR_AP_PWD             141 // 109 + 32
   
   //----------------------------------------------------------------------------------------------------
-  // Valeurs par défauts
+  // Valeurs des paramètres par défauts
   //----------------------------------------------------------------------------------------------------
-  #define DEFAULT_TEMPS_ARMEMENT    2   // Délai d'armement de la minuterie = 2 seconde
-  #define DEFAULT_TEMPS_VOL       183   // Temps de vol par défaut 3 minutes
-  #define DEFAULT_SERVO_DEPART   1000   // Position servo au départ du vol (1000 micro secondes = 0°)
-  #define DEFAULT_SERVO_DT       2000   // Position servo au DT (2000 micro secondes = angle max du servo)
-  #define DEFAULT_CLI_SSID "\0"         // SSID client (la minuterie se connecte si défini)
-  #define DEFAULT_CLI_PWD  "\0"         // WPA-PSK/WPA2-PSK client
-  #define DEFAULT_AP_SSID  "WeTimer_\0" // SSID de l'AP minuterie
-  #define DEFAULT_AP_PWD   "\0"         // WPA-PSK/WPA2-PSK AP
+  #define DEFAULT_TEMPS_ARMEMENT         2   // Délai d'armement de la minuterie = 2 seconde
+  #define DEFAULT_TEMPS_VOL            183   // Temps de vol par défaut 3 minutes
+  #define DEFAULT_SERVO_STAB_VOL      1000   // Position servo au départ du vol (1000 micro secondes = 0°)
+  #define DEFAULT_SERVO_STAB_TREUIL   1200   // Position servo quand le switch crochet est actionné (câble tendu)
+  #define DEFAULT_SERVO_STAB_DT       2000   // Position servo au DT (2000 micro secondes = angle max du servo)
+  #define DEFAULT_SERVO_DERIVE_VOL    1100   // Position servo de dérive en vol spirale
+  #define DEFAULT_SERVO_DERIVE_TREUIL 1500   // Position servo de dérive câble tendu (montée droite)
+  #define DEFAULT_CLI_SSID "\0"              // SSID client (la minuterie se connecte si défini)
+  #define DEFAULT_CLI_PWD  "\0"              // WPA-PSK/WPA2-PSK client
+  #define DEFAULT_AP_SSID  "WeTimer_\0"      // SSID de l'AP minuterie
+  #define DEFAULT_AP_PWD   "\0"              // WPA-PSK/WPA2-PSK AP
 
+  #define MIN_SERVO_MICROSECONDS 1000
+  #define MAX_SERVO_MICROSECONDS 2000
+  
+  //----------------------------------------------------------------------------------------------------
+  // Etats possibles de la minuterie
+  //----------------------------------------------------------------------------------------------------
   #define STATUS_DT     0
   #define STATUS_ARMEE  1
   #define STATUS_TREUIL 2
   #define STATUS_VOL    4
 
+  //----------------------------------------------------------------------------------------------------
+  // Valeurs d'état du switch crochet
+  //----------------------------------------------------------------------------------------------------
   #define CROCHET_TENDU 0
   #define CROCHET_RELACHE 1
 
 
-  /* Premier proto
-  #define PIN_SERVO 4  // D2 == GPIO4
-  #define PIN_SWITCH 0 // D3 == GPIO0
-  */
-  
-  /* Proto N°2 Servo sur D2 et Switch crochet entre D7 et D8 */
-  #define PIN_SERVO   4 // D2 == GPIO4
-  #define PIN_SWITCH 13 // D7 == GPI13
-  #define GND_SWITCH 15 // D8 == GPI15
+  //----------------------------------------------------------------------------------------------------
+  // Hardware mapping :
+  // Proto N°2 Servo stab sur D2, servi dérive sur D1 et Switch crochet entre D7 et D8
+  //----------------------------------------------------------------------------------------------------
+  #define PIN_SERVO_STAB    4 // D2 == GPIO4
+  #define PIN_SERVO_DERIVE  5 // D1 == GPIO5
+  #define PIN_SWITCH       13 // D7 == GPI13
+  #define GND_SWITCH       15 // D8 == GPI15
 
 
+  //----------------------------------------------------------------------------------------------------
+  // Variables globales
+  //----------------------------------------------------------------------------------------------------
   extern char cli_ssid[32];
   extern char cli_pwd[63];
   extern char ap_ssid[32];
   extern char ap_pwd[63];
   
-  extern unsigned int  delaiArmement;     // Secondes
-  extern unsigned int  tempsVol;   // Secondes
-  extern unsigned int  servoDepart;  // Microsecondes
-  extern unsigned int  servoDT;  // Microsecondes
+  extern unsigned int delaiArmement;
+  extern unsigned int tempsVol;
+  extern unsigned int servoStabVol;
+  extern unsigned int servoStabTreuil;
+  extern unsigned int servoStabDT;
+  extern unsigned int servoDeriveVol;
+  extern unsigned int servoDeriveTreuil;
   
-  /* hostname for mDNS. Should work at least on windows. Try http://minuterie.local */
+  // hostname for mDNS. Should work at least on windows. Try http://minuterie.local
   extern const char *myHostname;
   
   // DNS server
@@ -117,7 +138,8 @@
   extern unsigned long debut;
   extern int crochet;
   
-  extern Servo servo;         // Variable globale DT servo
+  extern Servo servoStab;   // Variable globale servo stabilisateur
+  extern Servo servoDerive; // Variable globale servo dérive
   
   extern int timerStatus;
   

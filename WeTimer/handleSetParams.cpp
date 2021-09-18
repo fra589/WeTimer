@@ -64,27 +64,63 @@ void handleSetParams() {
           Serial.flush();
         #endif
       }
-    } else if (strncasecmp(server.argName(i).c_str(), "servoDepart", (size_t)11) == 0) {
-      unsigned int newServoDepart = server.arg(i).toInt();
-      if ((servoDepart != newServoDepart) and (newServoDepart >= 1000) and (newServoDepart <= 2000)) {
-        servoDepart = newServoDepart;
+    } else if (strncasecmp(server.argName(i).c_str(), "servoStabVol", (size_t)12) == 0) {
+      unsigned int newServoStabVol = server.arg(i).toInt();
+      if ((servoStabVol != newServoStabVol) and (newServoStabVol >= MIN_SERVO_MICROSECONDS) and (newServoStabVol <= MAX_SERVO_MICROSECONDS)) {
+        servoStabVol = newServoStabVol;
         parmUpdated = true;
-        EEPROM_writeInt(ADDR_SERVO_DEPART, servoDepart);
+        EEPROM_writeInt(ADDR_SERVO_STAB_VOL, servoStabVol);
         #ifdef debug
-          Serial.print("Mise à jour servoDepart = ");
-          Serial.println(servoDepart);
+          Serial.print("Mise à jour servoStabVol = ");
+          Serial.println(servoStabVol);
           Serial.flush();
         #endif
       }
-    } else if (strncasecmp(server.argName(i).c_str(), "servoDT", (size_t)7) == 0) {
-      unsigned int newServoDT = server.arg(i).toInt();
-      if ((servoDT != newServoDT) and (newServoDT >= 1000) and (newServoDT <= 2000)) {
-        servoDT = newServoDT;
+    } else if (strncasecmp(server.argName(i).c_str(), "servoStabTreuil", (size_t)15) == 0) {
+      unsigned int newServoStabTreuil = server.arg(i).toInt();
+      if ((servoStabTreuil != newServoStabTreuil) and (newServoStabTreuil >= MIN_SERVO_MICROSECONDS) and (newServoStabTreuil <= MAX_SERVO_MICROSECONDS)) {
+        servoStabTreuil = newServoStabTreuil;
         parmUpdated = true;
-        EEPROM_writeInt(ADDR_SERVO_DT, servoDT);
+        EEPROM_writeInt(ADDR_SERVO_STAB_TREUIL, servoStabTreuil);
         #ifdef debug
-          Serial.print("Mise à jour servoDT = ");
-          Serial.println(servoDT);
+          Serial.print("Mise à jour servoStabTreuil = ");
+          Serial.println(servoStabTreuil);
+          Serial.flush();
+        #endif
+      }
+    } else if (strncasecmp(server.argName(i).c_str(), "servoStabDT", (size_t)11) == 0) {
+      unsigned int newServoDT = server.arg(i).toInt();
+      if ((servoStabDT != newServoDT) and (newServoDT >= MIN_SERVO_MICROSECONDS) and (newServoDT <= MAX_SERVO_MICROSECONDS)) {
+        servoStabDT = newServoDT;
+        parmUpdated = true;
+        EEPROM_writeInt(ADDR_SERVO_STAB_DT, servoStabDT);
+        #ifdef debug
+          Serial.print("Mise à jour servoStabDT = ");
+          Serial.println(servoStabDT);
+          Serial.flush();
+        #endif
+      }
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveVol", (size_t)14) == 0) {
+      unsigned int newServoDeriveVol = server.arg(i).toInt();
+      if ((servoDeriveVol != newServoDeriveVol) and (newServoDeriveVol >= MIN_SERVO_MICROSECONDS) and (newServoDeriveVol <= MAX_SERVO_MICROSECONDS)) {
+        servoDeriveVol = newServoDeriveVol;
+        parmUpdated = true;
+        EEPROM_writeInt(ADDR_SERVO_DERIVE_VOL, servoDeriveVol);
+        #ifdef debug
+          Serial.print("Mise à jour servoDeriveVol = ");
+          Serial.println(servoDeriveVol);
+          Serial.flush();
+        #endif
+      }
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuil", (size_t)17) == 0) {
+      unsigned int newServoDeriveTreuil = server.arg(i).toInt();
+      if ((servoDeriveTreuil != newServoDeriveTreuil) and (newServoDeriveTreuil >= MIN_SERVO_MICROSECONDS) and (newServoDeriveTreuil <= MAX_SERVO_MICROSECONDS)) {
+        servoDeriveTreuil = newServoDeriveTreuil;
+        parmUpdated = true;
+        EEPROM_writeInt(ADDR_SERVO_DERIVE_TREUIL, servoDeriveTreuil);
+        #ifdef debug
+          Serial.print("Mise à jour servoDeriveTreuil = ");
+          Serial.println(servoDeriveTreuil);
           Serial.flush();
         #endif
       }

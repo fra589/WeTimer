@@ -37,7 +37,7 @@ bool captivePortal() {
 }
 
 void handleNotFound() {
-  if (captivePortal()) { // If caprive portal redirect instead of displaying the error page.
+  if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
     return;
   }
   String message = F("File Not Found : ");
@@ -59,9 +59,8 @@ void handleNotFound() {
 
 
 void handleRDT() {
-
   // Force le DT
-  servo.writeMicroseconds(servoDT);
+  servoStab.writeMicroseconds(servoStabDT);
   timerStatus = STATUS_DT;
   #ifdef debug
     Serial.println("RDT : Déthermalise...");
@@ -78,6 +77,49 @@ void handleRDT() {
   server.client().stop(); // Stop is needed because we sent no content length
   ////saveCredentials();
   ////connect = strlen(ssid) > 0; // Request WLAN connect with new credentials if there is a SSID
+}
+
+
+void handleSetservo() {
+  unsigned int servoNum = 0; // 0=> Non connu, 1 => stab, 2 => derive
+  unsigned int newValue = 0; // nouvelle valeur a affecter...
+  String XML;
+  #ifdef debug
+    Serial.println("**************** handleSetservo() ****************");
+  #endif
+  for (int i = 0; i < server.args(); i++) {
+    // décode les arguments
+    #ifdef debug
+      Serial.print("Arg n°" + (String)i + " –> ");
+      Serial.print(server.argName(i));
+      Serial.print(":");
+      Serial.println(server.arg(i));
+    #endif
+    if (strncasecmp(server.argName(i).c_str(), "servo", (size_t)5) == 0) {
+      if (strncasecmp(server.arg(i).c_str(), "stab", (size_t)4) == 0) {
+        servoNum = 1;
+      } else if (strncasecmp(server.arg(i).c_str(), "derive", (size_t)6) == 0) {
+        servoNum = 2;
+      }
+    } else if (strncasecmp(server.argName(i).c_str(), "valeur", (size_t)6) == 0) {
+      unsigned int newValueTemp = server.arg(i).toInt();
+      if ((newValueTemp >= MIN_SERVO_MICROSECONDS) && (newValueTemp <= MAX_SERVO_MICROSECONDS)) {
+        newValue = newValueTemp;
+      }
+    }
+  }
+  // positionne le servo
+  if ((servoNum == 1) && (newValue != 0)) {
+    servoStab.writeMicroseconds(newValue);
+  } else if ((servoNum == 2) && (newValue != 0)) {
+    servoDerive.writeMicroseconds(newValue);
+  }
+  // Renvoi la réponse au client http
+  XML =F("<?xml version='1.0'?>");
+  XML+=F("<response>");
+  XML+=F("OK");
+  XML+=F("</response>");
+  server.send(200,"text/xml",XML);
 }
 
 

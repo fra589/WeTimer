@@ -30,10 +30,13 @@ char cli_pwd[63]  = DEFAULT_CLI_PWD;
 char ap_ssid[32]  = DEFAULT_AP_SSID;
 char ap_pwd[63]   = DEFAULT_AP_PWD;
 
-unsigned int  delaiArmement = 2;     // Secondes
-unsigned int  tempsVol      = 180;   // Secondes
-unsigned int  servoDepart   = 1000;  // Microsecondes
-unsigned int  servoDT       = 2000;  // Microsecondes
+unsigned int  delaiArmement     = DEFAULT_TEMPS_ARMEMENT;      // Secondes
+unsigned int  tempsVol          = DEFAULT_TEMPS_VOL;           // Secondes
+unsigned int  servoStabVol      = DEFAULT_SERVO_STAB_VOL;      // Microsecondes
+unsigned int  servoStabTreuil   = DEFAULT_SERVO_STAB_TREUIL;   // Microsecondes
+unsigned int  servoStabDT       = DEFAULT_SERVO_STAB_DT;       // Microsecondes
+unsigned int  servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;    // Microsecondes
+unsigned int  servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL; // Microsecondes
 
 /* hostname for mDNS. Should work at least on windows. Try http://minuterie.local */
 const char *myHostname = APP_NAME;
@@ -52,7 +55,8 @@ IPAddress netMsk(255, 255, 255, 0);
 unsigned long debut;
 int crochet = 0;
 
-Servo servo;         // Variable globale DT servo
+Servo servoStab;   // Variable globale servo stabilisateur
+Servo servoDerive; // Servo pour la dérive
 
 int timerStatus = STATUS_DT;
 
@@ -77,10 +81,14 @@ void setup() {
   EEPROM.begin(EEPROM_LENGTH);
   
   // Récupération des paramètres dans la Flash ou de leur valeur par défaut
-  delaiArmement = EEPROM_readInt(ADDR_TEMPS_ARMEMENT); if (delaiArmement == 0xFFFF) delaiArmement = DEFAULT_TEMPS_ARMEMENT;
-  tempsVol      = EEPROM_readInt(ADDR_TEMPS_VOL);      if (tempsVol      == 0xFFFF) tempsVol      = DEFAULT_TEMPS_VOL;
-  servoDepart   = EEPROM_readInt(ADDR_SERVO_DEPART);   if (servoDepart   == 0xFFFF) servoDepart   = DEFAULT_SERVO_DEPART;
-  servoDT       = EEPROM_readInt(ADDR_SERVO_DT);       if (servoDT       == 0xFFFF) servoDT       = DEFAULT_SERVO_DT;
+  delaiArmement     = EEPROM_readInt(ADDR_TEMPS_ARMEMENT);      if (delaiArmement     == 0xFFFF) delaiArmement     = DEFAULT_TEMPS_ARMEMENT;
+  tempsVol          = EEPROM_readInt(ADDR_TEMPS_VOL);           if (tempsVol          == 0xFFFF) tempsVol          = DEFAULT_TEMPS_VOL;
+  servoStabVol      = EEPROM_readInt(ADDR_SERVO_STAB_VOL);      if (servoStabVol      == 0xFFFF) servoStabVol      = DEFAULT_SERVO_STAB_VOL;
+  servoStabTreuil   = EEPROM_readInt(ADDR_SERVO_STAB_TREUIL);   if (servoStabTreuil   == 0xFFFF) servoStabTreuil   = DEFAULT_SERVO_STAB_TREUIL;
+  servoStabDT       = EEPROM_readInt(ADDR_SERVO_STAB_DT);       if (servoStabDT       == 0xFFFF) servoStabDT       = DEFAULT_SERVO_STAB_DT;
+  servoDeriveVol    = EEPROM_readInt(ADDR_SERVO_DERIVE_VOL);    if (servoDeriveVol    == 0xFFFF) servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;
+  servoDeriveTreuil = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL); if (servoDeriveTreuil == 0xFFFF) servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL;
+  
   char charTmp = char(EEPROM.read(ADDR_CLI_SSID));
   if (charTmp != 0xFF) {
     cli_ssid[0] = charTmp;
@@ -114,26 +122,27 @@ void setup() {
   }
 
   #ifdef debug
-    Serial.print("delaiArmement = ");
-    Serial.println(delaiArmement);
-    Serial.print("tempsVol      = ");
-    Serial.println(tempsVol);
-    Serial.print("servoDepart   = ");
-    Serial.println(servoDepart);
-    Serial.print("servoDT       = ");
-    Serial.println(servoDT);
-    Serial.print("cli_ssid      = ");
-    Serial.println(cli_ssid);
-    Serial.print("cli_pwd       = ");
-    Serial.println(cli_pwd);
-    Serial.print("ap_ssid       = ");
-    Serial.println(ap_ssid);
-    Serial.print("ap_pwd        = ");
-    Serial.println(ap_pwd);
+    Serial.print("delaiArmement     = "); Serial.println(delaiArmement);
+    Serial.print("tempsVol          = "); Serial.println(tempsVol);
+    Serial.print("servoStabVol      = "); Serial.println(servoStabVol);
+    Serial.print("servoStabTreuil   = "); Serial.println(servoStabTreuil);
+    Serial.print("servoStabDT       = "); Serial.println(servoStabDT);
+    Serial.print("servoDeriveVol    = "); Serial.println(servoDeriveVol);
+    Serial.print("servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
+    Serial.print("cli_ssid          = "); Serial.println(cli_ssid);
+    Serial.print("cli_pwd           = "); Serial.println(cli_pwd);
+    Serial.print("ap_ssid           = "); Serial.println(ap_ssid);
+    Serial.print("ap_pwd            = "); Serial.println(ap_pwd);
   #endif
   
-  servo.attach(PIN_SERVO);
-  servo.writeMicroseconds(servoDT);
+  servoStab.attach(PIN_SERVO_STAB);
+  servoStab.writeMicroseconds(servoStabDT);
+  servoDerive.attach(PIN_SERVO_DERIVE);
+  servoDerive.writeMicroseconds(servoDeriveVol);
+  #ifdef debug
+    Serial.print("setup() : Servo stab en position DT ("); Serial.print(servoStabDT); Serial.println(")");
+    Serial.print("setup() : Servo derive en position vol ("); Serial.print(servoDeriveVol); Serial.println(")");
+  #endif
   
   pinMode(PIN_SWITCH, INPUT_PULLUP);
   pinMode(GND_SWITCH, OUTPUT);
@@ -198,6 +207,7 @@ void setup() {
   server.on("/setparams", handleSetParams);
   server.on("/wifi", handleWiFi);
   server.on("/rdt", handleRDT);
+  server.on("/setservo", handleSetservo);
   server.on("/factory", handleFactory);
   server.onNotFound(handleNotFound);
   server.begin(); // Web server start
@@ -228,14 +238,20 @@ void loop() {
     // Détecte les changement d'état du switch du crochet
     if (new_crochet == CROCHET_TENDU) {
       // On vient d'enfoncer la pédale du crochet
+      // On positionne les 2 servos en mode treuillage
+      servoStab.writeMicroseconds(servoStabTreuil);
+      servoDerive.writeMicroseconds(servoDeriveTreuil);
+      #ifdef debug
+        Serial.print("Tension du crochet : Stab en position treuil,   servoStabTreuil   = "); Serial.println(servoStabTreuil);
+        Serial.print("Tension du crochet : Dérive en position treuil, servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
+      #endif
       if (timerStatus == STATUS_DT) {
         // On était en DT, on arme la minuterie
-        servo.writeMicroseconds(servoDepart);
         timerStatus = STATUS_ARMEE;
         debut = millis();
         blinkInterval = 1000; // 1 secondes
         #ifdef debug
-          Serial.println("Servo en position départ.");
+          ////Serial.println("Servo en position départ.");
           Serial.println("timerStatus = STATUS_ARMEE");
           Serial.print("debut = "); Serial.println(debut);
           Serial.flush();
@@ -256,7 +272,16 @@ void loop() {
         #endif
       }
     } else { // new_crochet == CROCHET_RELACHE
-      // Le cable vient de se relacher
+      // Le cable vient de se relacher,
+      // On positionne les 2 servos en mode plané si on est pas déthermalisé
+      if (timerStatus != STATUS_DT) {
+        servoStab.writeMicroseconds(servoStabVol);
+        servoDerive.writeMicroseconds(servoDeriveVol);
+        #ifdef debug
+          Serial.print("Relâchement du crochet : Stab en position vol,   servoStabVol   = "); Serial.println(servoStabVol);
+          Serial.print("Relâchement du crochet : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
+        #endif
+      }
       if (timerStatus == STATUS_TREUIL) {
         // Début du vol
         timerStatus = STATUS_VOL;
@@ -268,7 +293,6 @@ void loop() {
           Serial.flush();
         #endif
       }
-      ////servo.writeMicroseconds(servoDT);
     }
     #ifdef debug
       Serial.print("crochet=");
@@ -276,7 +300,7 @@ void loop() {
       Serial.flush();
     #endif
     crochet = new_crochet;
-  }
+  } // if (new_crochet != crochet)
   // Si le crochet est tendu depuis plus de "delaiArmement" et le status "STATUS_ARMEE", on passe en status STATUS_TREUIL
   if ((timerStatus == STATUS_ARMEE) and (crochet == CROCHET_TENDU) and ((millis() - debut) > delaiArmement * 1000)) {
     timerStatus = STATUS_TREUIL;
@@ -289,11 +313,10 @@ void loop() {
 
   // Si le crochet est relâché depuis plus de "tempsVol" et le status "STATUS_VOL", on déthermalise
   if ((timerStatus == STATUS_VOL) and (crochet == CROCHET_RELACHE) and ((millis() - debut) > tempsVol * 1000)) {
-    servo.writeMicroseconds(servoDT);
+    servoStab.writeMicroseconds(servoStabDT);
     timerStatus = STATUS_DT;
     #ifdef debug
-      Serial.println("Déthermalise...");
-      Serial.println("Servo en position DT.");
+      Serial.print("Déthermalise : Stab en position DT,   servoStabVol = "); Serial.println(servoStabDT);
       Serial.println("timerStatus = STATUS_DT");
       Serial.flush();
     #endif

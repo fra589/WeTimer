@@ -112,6 +112,47 @@ void handleRoot() {
     "  background-color: #f0f0f0;\n"
     "}\n"
     "</style>\n"
+    "<script>\n"
+    "function setServoPos(servo, valeur) {\n"
+    "  var xhttp = getXMLHttpRequest();\n"
+    "  xhttp.onreadystatechange = function() {\n"
+    "    if (xhttp.readyState == 4) {\n"
+    "      if ((xhttp.status == 200) || (xhttp.status == 0)) {\n"
+    "        //alert(xhttp.responseText);\n"
+    "        xmlrep = xhttp.responseXML;\n"
+    "        xmldoc = xmlrep.getElementsByTagName('response');\n"
+    "        rep = xmldoc[0].firstChild.nodeValue;\n"
+    "        if (rep != 'OK') {\n"
+    "          alert(\"setServoPos() : mauvaise réponse de la minuterie !\");\n"
+    "        }\n"
+    "      } else {\n"
+    "        alert(\"XMLHttpRequest_setservo() : Erreur \"+xhttp.status);\n"
+    "      }\n"
+    "    }\n"
+    "  };\n"
+    "  xhttp.open(\"POST\", \"/setservo\", true);\n"
+    "  xhttp.setRequestHeader(\"Content-Type\", \"application/x-www-form-urlencoded\");\n"
+    "  xhttp.send(\"servo=\"+servo+\"&valeur=\"+valeur);\n"
+    "}\n"
+    "function getXMLHttpRequest() {\n"
+    "    var xhr = null;\n"
+    "    if (window.XMLHttpRequest || window.ActiveXObject) {\n"
+    "        if (window.ActiveXObject) {\n"
+    "            try {\n"
+    "                xhr = new ActiveXObject(\"Msxml2.XMLHTTP\");\n"
+    "            } catch(e) {\n"
+    "                xhr = new ActiveXObject(\"Microsoft.XMLHTTP\");\n"
+    "            }\n"
+    "        } else {\n"
+    "            xhr = new XMLHttpRequest();\n"
+    "        }\n"
+    "    } else {\n"
+    "        alert(\"Votre navigateur ne supporte pas l'objet XMLHTTPRequest...\");\n"
+    "        return null;\n"
+    "    }\n"
+    "    return xhr;\n"
+    "}\n"
+    "</script>\n"
     "</head>\n"
     "<body>\n"
     "<h1 style=\"margin-bottom: 0;\">WeTimer</h1>\n"
@@ -126,10 +167,10 @@ void handleRoot() {
   Page += F(
     "<p>Minuterie status = "
   );
-  if (timerStatus == STATUS_DT) Page += F("STATUS_DT");
-  else if (timerStatus == STATUS_ARMEE) Page += F("STATUS_ARMEE");
+  if (timerStatus == STATUS_DT)          Page += F("STATUS_DT");
+  else if (timerStatus == STATUS_ARMEE)  Page += F("STATUS_ARMEE");
   else if (timerStatus == STATUS_TREUIL) Page += F("STATUS_TREUIL");
-  else if (timerStatus == STATUS_VOL) Page += F("STATUS_VOL");
+  else if (timerStatus == STATUS_VOL)    Page += F("STATUS_VOL");
   Page += F(
     "</p>\n"
   );
@@ -140,10 +181,13 @@ void handleRoot() {
   );
   //--------------------------------------------------------------------------------
   Page += F("<pre style=\"text-align: left;\">\n");
-  Page += F("Délai armement    = ") + String(delaiArmement) + F(" secondes\n");
-  Page += F("Durée de vol      = ") + String(tempsVol) + F(" secondes\n");
-  Page += F("Pos. servo départ = ") + String(servoDepart) + F(" micro secondes\n");
-  Page += F("Pos. servo DT     = ") + String(servoDT) + F(" micro secondes\n");
+  Page += F("Délai armement         = ") + String(delaiArmement) + F(" s\n");
+  Page += F("Durée de vol           = ") + String(tempsVol) + F(" s\n");
+  Page += F("Pos. servo stab vol    = ") + String(servoStabVol) + F(" μs\n");
+  Page += F("Pos. servo stab treuil = ") + String(servoStabTreuil) + F(" μs\n");
+  Page += F("Pos. servo stab DT     = ") + String(servoStabDT) + F(" μs\n");
+  Page += F("Pos. derive treuil     = ") + String(servoDeriveTreuil) + F(" μs\n");
+  Page += F("Pos. derive vol        = ") + String(servoDeriveVol) + F(" μs\n");
   Page += F("</pre>\n");
   //--------------------------------------------------------------------------------
   Page += F(
@@ -158,35 +202,112 @@ void handleRoot() {
     "</p>-->\n"
     "<form id=\"mainForm\" action=\"setparams\" method=\"POST\">\n"
     "<div style=\"text-align: center !important;\">\n"
-
-    "<label for=\"delaiArmement\" style=\"display: inline-block; text-align: left; width: 57%;\">Armement (secondes)</label>\n"
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"delaiArmement\" style=\"display: inline-block; text-align: left; width: 57%;\">Armement (s)</label>\n"
     "<input name=\"delaiArmement\" type=\"number\" onfocus=\"this.select();\" value=\""
   );
   Page += String(delaiArmement);
   Page += F(
     "\"/><br />\n"
-
-    "<label for=\"tempsVol\" style=\"display: inline-block; text-align: left; width: 57%;\">Temps de vol (secondes)</label>\n"
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"tempsVol\" style=\"display: inline-block; text-align: left; width: 57%;\">Temps de vol (s)</label>\n"
     "<input name=\"tempsVol\" type=\"number\" onfocus=\"this.select();\" value=\""
   );
   Page += String(tempsVol);
   Page += F(
     "\"/><br />\n"
-
-    "<label for=\"servoDepart\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo départ (μsecondes)</label>\n"
-    "<input name=\"servoDepart\" type=\"number\" min=\"1000\" max=\"2000\" onfocus=\"this.select();\" value=\""
   );
-  Page += String(servoDepart);
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"servoStabVol\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo stab vol (μs)</label>\n"
+    "<input name=\"servoStabVol\" type=\"number\" min=\""
+  );
+  Page += String(MIN_SERVO_MICROSECONDS);
+  Page += F(
+    "\" max=\""
+  );
+  Page += String(MAX_SERVO_MICROSECONDS);
+  Page += F(
+    "\" onfocus=\"this.select(); setServoPos('stab', this.value);\" oninput=\"setServoPos('stab', this.value);\" value=\""
+  );
+  Page += String(servoStabVol);
   Page += F(
     "\"/><br />\n"
-
-    "<label for=\"servoDT\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo DT (μsecondes)</label>\n"
-    "<input name=\"servoDT\" type=\"number\" min=\"1000\" max=\"2000\" onfocus=\"this.select();\" value=\""
   );
-  Page += String(servoDT);
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"servoStabTreuil\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo stab treuil (μs)</label>\n"
+    "<input name=\"servoStabTreuil\" type=\"number\" min=\""
+  );
+  Page += String(MIN_SERVO_MICROSECONDS);
+  Page += F(
+    "\" max=\""
+  );
+  Page += String(MAX_SERVO_MICROSECONDS);
+  Page += F(
+    "\" onfocus=\"this.select(); setServoPos('stab', this.value);\" oninput=\"setServoPos('stab', this.value);\" value=\""
+  );
+  Page += String(servoStabTreuil);
   Page += F(
     "\"/><br />\n"
-
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"servoStabDT\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo stab DT (μs)</label>\n"
+    "<input name=\"servoStabDT\" type=\"number\" min=\""
+  );
+  Page += String(MIN_SERVO_MICROSECONDS);
+  Page += F(
+    "\" max=\""
+  );
+  Page += String(MAX_SERVO_MICROSECONDS);
+  Page += F(
+    "\" onfocus=\"this.select(); setServoPos('stab', this.value);\" oninput=\"setServoPos('stab', this.value);\" value=\""
+  );
+  Page += String(servoStabDT);
+  Page += F(
+    "\"/><br />\n"
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"servoDeriveVol\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo derive vol (μs)</label>\n"
+    "<input name=\"servoDeriveVol\" type=\"number\" min=\""
+  );
+  Page += String(MIN_SERVO_MICROSECONDS);
+  Page += F(
+    "\" max=\""
+  );
+  Page += String(MAX_SERVO_MICROSECONDS);
+  Page += F(
+    "\" onfocus=\"this.select(); setServoPos('derive', this.value);\" oninput=\"setServoPos('derive', this.value);\" value=\""
+  );
+  Page += String(servoDeriveVol);
+  Page += F(
+    "\"/><br />\n"
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
+    "<label for=\"servoDeriveTreuil\" style=\"display: inline-block; text-align: left; width: 57%;\">Servo derive treuil (μs)</label>\n"
+    "<input name=\"servoDeriveTreuil\" type=\"number\" min=\""
+  );
+  Page += String(MIN_SERVO_MICROSECONDS);
+  Page += F(
+    "\" max=\""
+  );
+  Page += String(MAX_SERVO_MICROSECONDS);
+  Page += F(
+    "\" onfocus=\"this.select(); setServoPos('derive', this.value);\" oninput=\"setServoPos('derive', this.value);\" value=\""
+  );
+  Page += String(servoDeriveTreuil);
+  Page += F(
+    "\"/><br />\n"
+  );
+  //--------------------------------------------------------------------------------
+  Page += F(
     "<!--<p style=\"text-align:center;\"><input type='submit' value='&#13;&#10;Envoi paramètres&#13;&#10;&nbsp;'/></p>-->\n"
     "<p>\n"
     "<div class=\"centreur\">\n"

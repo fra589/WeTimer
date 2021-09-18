@@ -25,6 +25,7 @@
   bool captivePortal();
   void handleNotFound();
   void handleRDT();
+  void handleSetservo();
   void handleFactory();
 
 #endif // handleHttp_h
