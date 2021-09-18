@@ -181,7 +181,6 @@ void handleRoot() {
   );
   //--------------------------------------------------------------------------------
   Page += F("<pre style=\"text-align: left;\">\n");
-<<<<<<< HEAD
   Page += F("Délai armement         = ") + String(delaiArmement) + F(" s\n");
   Page += F("Durée de vol           = ") + String(tempsVol) + F(" s\n");
   Page += F("Pos. servo stab vol    = ") + String(servoStabVol) + F(" μs\n");
@@ -189,20 +188,6 @@ void handleRoot() {
   Page += F("Pos. servo stab DT     = ") + String(servoStabDT) + F(" μs\n");
   Page += F("Pos. derive treuil     = ") + String(servoDeriveTreuil) + F(" μs\n");
   Page += F("Pos. derive vol        = ") + String(servoDeriveVol) + F(" μs\n");
-=======
-  Page += F("Délai armement    = ");
-  Page += String(delaiArmement);
-  Page += F(" secondes\n");
-  Page += F("Durée de vol      = ");
-  Page += String(tempsVol);
-  Page += F(" secondes\n");
-  Page += F("Pos. servo départ = ");
-  Page += String(servoDepart);
-  Page += F(" micro secondes\n");
-  Page += F("Pos. servo DT     = ");
-  Page += String(servoDT);
-  Page += F(" micro secondes\n");
->>>>>>> 32b4745fb28be6e98a30a9f5410ac43a718e039a
   Page += F("</pre>\n");
   //--------------------------------------------------------------------------------
   Page += F(
