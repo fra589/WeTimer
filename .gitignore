@@ -1,0 +1,7 @@
+*.hex
+*.zip
+*.o
+*.bin
+*.odt
+builds
+doc.src
