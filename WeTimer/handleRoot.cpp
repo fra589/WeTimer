@@ -126,13 +126,15 @@ void handleRoot() {
   for (int i=0; i<7; i++) {
     Page += F("<div class=\"nomargin\"><label for=\"");
     Page += inputNames[i];
-    Page += F("\">");
+    Page += F("\" onclick=\"doubleHeight('");
+    Page += inputNames[i];
+    Page += F("');\">");
     Page += inputLabels[i];
     Page += F("</label>");
-    Page += F("<input type=\"button\" onclick=\"changeVal('");
+    Page += F("<input type=\"button\" tabindex=\"-1\" onclick=\"changeVal('");
     Page += inputNames[i];
     Page += F("', -5);\" value=\"&lt;&lt;\">");
-    Page += F("<input type=\"button\" onclick=\"changeVal('");
+    Page += F("<input type=\"button\" tabindex=\"-1\" onclick=\"changeVal('");
     Page += inputNames[i];
     Page += F("', -1);\" value=\"&nbsp;&lt;&nbsp;\">");
     Page += F("<input name=\"");
@@ -142,18 +144,24 @@ void handleRoot() {
     Page += F("\" max=\"");
     Page += maxValues[i];
     if (i < 2) {
-      Page += F("\" onfocus=\"this.select();\" value=\"");
+      Page += F("\" onfocus=\"doubleHeight('");
+      Page += inputNames[i];
+      Page += F("'); this.select();\" value=\"");
     } else if (i < 5) {
-      Page += F("\" onfocus=\"this.select(); setServoPos('stab', this.value);\" oninput=\"setServoPos('stab', this.value);\" value=\"");
+      Page += F("\" onfocus=\"doubleHeight('");
+      Page += inputNames[i];
+      Page += F("'); this.select(); setServoPos('stab', this.value);\" oninput=\"setServoPos('stab', this.value);\" value=\"");
     } else {
-      Page += F("\" onfocus=\"this.select(); setServoPos('derive', this.value);\" oninput=\"setServoPos('derive', this.value);\" value=\"");
+      Page += F("\" onfocus=\"doubleHeight('");
+      Page += inputNames[i];
+      Page += F("'); this.select(); setServoPos('derive', this.value);\" oninput=\"setServoPos('derive', this.value);\" value=\"");
     }
     Page += inputValues[i];
     Page += F("\"/>");
-    Page += F("<input type=\"button\" onclick=\"changeVal('");
+    Page += F("<input type=\"button\" tabindex=\"-1\" onclick=\"changeVal('");
     Page += inputNames[i];
     Page += F("', 1);\" value=\"&nbsp;&gt;&nbsp;\">");
-    Page += F("<input type=\"button\" onclick=\"changeVal('");
+    Page += F("<input type=\"button\" tabindex=\"-1\" onclick=\"changeVal('");
     Page += inputNames[i];
     Page += F("', 5);\" value=\"&gt;&gt;\">");
     Page += F("</div>\n");
@@ -162,11 +170,11 @@ void handleRoot() {
   Page += F(
     "<p>\n"
     "<div class=\"centreur\">\n"
-    "<div class=\"bouton\" onclick=\"document.write(''); document.location.reload(true);\">Relire</div>\n"
+    "<div class=\"bouton\" onclick=\"doubleHeight(''); document.write(''); document.location.reload(true);\">Relire</div>\n"
     "&nbsp;"
-    "<div class=\"bouton\" onclick=\"document.forms['mainForm'].submit();\">Envoi</div>\n"
+    "<div class=\"bouton\" onclick=\"doubleHeight(''); document.forms['mainForm'].submit();\">Envoi</div>\n"
     "&nbsp;"
-    "<div class=\"bouton rouge\" onclick=\"window.location.assign('/rdt');\">RDT</div>\n"
+    "<div class=\"bouton rouge\" onclick=\"doubleHeight(''); window.location.assign('/rdt');\">RDT</div>\n"
     "</div>\n"
     "</p>\n"
 
@@ -183,9 +191,9 @@ void handleRoot() {
   Page += F("<br />\n");
   Page += F("AP IP addr = ");
   Page += toStringIp(WiFi.softAPIP());  
-  Page += F("</p>\n");
   if(WiFi.status() == WL_CONNECTED) {
-    Page += F("    <p style=\"text-align: center;\">CLI SSID  = ");
+    Page += F("<br />\n");
+    Page += F("CLI SSID  = ");
     Page += String(cli_ssid);
     Page += F("<br />\n");
     Page += F("CLI MAC = ");
@@ -193,8 +201,8 @@ void handleRoot() {
     Page += F("<br />\n");
     Page += F("CLI IP addr = ");
     Page += toStringIp(WiFi.localIP());
-    Page += F("</p>\n");
   }
+  Page += F("</p>\n");
   Page += F(
     "<p style=\"text-align: center;\"><a href=\"/wifi\">Configurer le Wifi...</a></p>\n"
     "<p style=\"text-align: center;\">Copyright &copy; 2021 - Gauthier Brière</p>\n"
