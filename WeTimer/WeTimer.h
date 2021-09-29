@@ -32,6 +32,7 @@
   #include "tools.h"
   #include "handleHttp.h"
   #include "htmlStyle.h"
+  #include "javascript.h"
   #include "handleRoot.h"
   #include "handleSetParams.h"
   #include "handleWiFi.h"
@@ -41,8 +42,8 @@
   
   #define ORG_NAME           "fra589"
   #define APP_NAME           "WeTimer\0"
-  #define APP_VERSION_STRING "v0.9.0"
-  #define APP_VERSION_DATE   "20210918"
+  #define APP_VERSION_STRING "v0.9.2"
+  #define APP_VERSION_DATE   "20210929"
   
   
   //----------------------------------------------------------------------------------------------------
