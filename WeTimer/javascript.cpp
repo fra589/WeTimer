@@ -25,9 +25,13 @@
 /*--------------------------------------------------------------------------------------------------*/
 /*                                    HTML styles definitions                                       */
 /*--------------------------------------------------------------------------------------------------*/
+void handleScript() {
+  server.send(200, "text/javascript", app_script());
+}
+
+
 String app_script() {
   String script = F(
-    "<script>\n"
     "function setServoPos(servo, valeur) {\n"
     "  var xhttp = getXMLHttpRequest();\n"
     "  xhttp.onreadystatechange = function() {\n"
@@ -35,10 +39,12 @@ String app_script() {
     "      if ((xhttp.status == 200) || (xhttp.status == 0)) {\n"
     "        //alert(xhttp.responseText);\n"
     "        xmlrep = xhttp.responseXML;\n"
-    "        xmldoc = xmlrep.getElementsByTagName('response');\n"
-    "        rep = xmldoc[0].firstChild.nodeValue;\n"
-    "        if (rep != 'OK') {\n"
-    "          alert(\"setServoPos() : mauvaise réponse de la minuterie !\");\n"
+    "        if (xmlrep != null) {\n"
+    "          xmldoc = xmlrep.getElementsByTagName('response');\n"
+    "          rep = xmldoc[0].firstChild.nodeValue;\n"
+    "          if (rep != 'OK') {\n"
+    "            alert(\"setServoPos() : mauvaise réponse de la minuterie !\");\n"
+    "          }\n"
     "        }\n"
     "      } else {\n"
     "        alert(\"XMLHttpRequest_setservo() : Erreur \"+xhttp.status);\n"
@@ -69,20 +75,26 @@ String app_script() {
     "}\n"
     "function changeVal(inputName, increment) {\n"
     "  var inp = document.getElementsByName(inputName);\n"
-    "    inp[0].value = parseInt(inp[0].value) + increment;\n"
+    "    inp[0].value = parseInt(inp[0].value, 10) + increment;\n"
     "    if (inp[0].min != \"\") {\n"
-    "      if (parseInt(inp[0].value) < inp[0].min) {\n"
+    "      if (parseInt(inp[0].value, 10) < inp[0].min) {\n"
     "        inp[0].value = inp[0].min;\n"
     "      }\n"
     "    }\n"
     "    if (inp[0].max != \"\") {\n"
-    "      if (parseInt(inp[0].value) > inp[0].max) {\n"
+    "      if (parseInt(inp[0].value, 10) > inp[0].max) {\n"
     "        inp[0].value = inp[0].max;\n"
     "      }\n"
     "    }\n"
-    "    inp[0].focus();\n"
+    "    //inp[0].focus();\n"
+    "    if ((inp[0].name == 'servoStabVol') || (inp[0].name == 'servoStabTreuil') || (inp[0].name == 'servoStabDT')) {\n"
+    "      setServoPos('stab', inp[0].value)\n;"
+    "    } else if ((inp[0].name == 'servoDeriveVol') || (inp[0].name == 'servoDeriveTreuil')) {\n"
+    "      setServoPos('derive', inp[0].value)\n;"
+    "    }\n"
     "}\n"
     "function doubleHeight(inputName) {\n"
+    "  //alert(inputName);\n"
     "  var otherinp = document.getElementsByTagName(\"input\");\n"
     "  for (var i = 0; i < otherinp.length; i++) {\n"
     "    if ((otherinp[i].type == \"number\") && (inputName != \"\") && (otherinp[i].name != inputName)) {\n"
@@ -92,10 +104,21 @@ String app_script() {
     "  if (inputName != \"\") {\n"
     "    var inp = document.getElementsByName(inputName);\n"
     "    inp[0].parentNode.className = \"addPadding\";\n"
-    "    inp[0].focus();\n"
+    "    //inp[0].focus();\n"
     "  }\n"
     "}\n"
-    "</script>\n"
+    "function calculTemps() {\n"
+    "  var inp = document.getElementsByName(\"tempsVol\");\n"
+    "  if (inp.length > 0) {\n"
+    "    var secondes = parseInt(inp[0].value, 10);\n"
+    "    var minutes = Math.floor(secondes / 60);\n"
+    "    var sec = secondes - minutes * 60;\n"
+    "    var result = document.getElementById(\"tempsMinutes\");\n"
+    "    if (result != null) {\n"
+    "      result.textContent = minutes + \" minute(s) \" + sec + \" seconde(s)\";\n"
+    "    }\n"
+    "  }\n"
+    "}\n"
   );
   return script;
 }

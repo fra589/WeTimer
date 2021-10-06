@@ -26,6 +26,7 @@
 void handleSetParams() {
   String updateSentence = "";
   bool parmUpdated = false;
+  String urlRetour = "/";
   
   #ifdef debug
     Serial.println("Mise à jour des paramètres...");
@@ -40,6 +41,9 @@ void handleSetParams() {
       Serial.print(":");
       Serial.println(server.arg(i));
     #endif
+    if (strncasecmp(server.argName(i).c_str(), "retour", (size_t)6) == 0) {
+      urlRetour += server.arg(i);
+    }
     if (strncasecmp(server.argName(i).c_str(), "delaiArmement", (size_t)13) == 0) {
       unsigned int newDelaiArmement = server.arg(i).toInt();
       if ((delaiArmement != newDelaiArmement) and (newDelaiArmement != 0)) {
@@ -190,7 +194,7 @@ void handleSetParams() {
   }
 
   // Retour à la page principale après traitements
-  server.sendHeader("Location", "/", true);
+  server.sendHeader("Location", urlRetour, true);
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");

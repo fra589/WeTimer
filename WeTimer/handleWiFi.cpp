@@ -27,30 +27,12 @@ void handleWiFi() {
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
   server.sendHeader("Expires", "-1");
-
+  //--------------------------------------------------------------------------------
   String Page;
+  Page = htmlEntete();
   //--------------------------------------------------------------------------------
   Page += F(
-    "<html>\n"
-    "<head>\n"
-    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" charset=\"utf-8\">\n"    
-    "<title>WeTimer</title>\n"
-  );
-  Page += app_style();
-  Page += F(
-    "</head>\n"
-    "<body>\n"
-    "<h1 style=\"margin-bottom: 0;\">WeTimer</h1>\n"
-    "<p style=\"margin-top: 0;\">Minuterie planeur Papi - "
-  );
-  Page += APP_VERSION_STRING;
-  Page += F(
-    "</p>\n"
-    "<hr>\n"
-  );
-  //--------------------------------------------------------------------------------
-  Page += F(
-    "<form id=\"mainForm\" action=\"setparams\" method=\"POST\">\n"
+    "<form id=\"mainForm\" action=\"setparams?retour=wifi\" method=\"POST\">\n"
     "<div style=\"text-align: center !important;\">\n"
 
     "<label for=\"ap_ssid\" style=\"display: inline-block; text-align: left; width: 57%;\">AP SSID</label>\n"
@@ -91,33 +73,14 @@ void handleWiFi() {
     "</form>\n"
   );
   //--------------------------------------------------------------------------------
-  Page += F("<hr>\n");
+  Page += netStatus();
   //--------------------------------------------------------------------------------
-  Page += F("    <p style=\"text-align: center;\">AP SSID  = ");
-  Page += String(ap_ssid);
-  Page += F("<br />\n");
-  Page += F("AP MAC = ");
-  Page += WiFi.softAPmacAddress();
-  Page += F("<br />\n");
-  Page += F("IP addr = ");
-  Page += toStringIp(WiFi.softAPIP());  
-  Page += F("</p>\n");
-  if(WiFi.status() == WL_CONNECTED) {
-    Page += F("    <p style=\"text-align: center;\">CLI SSID  = ");
-    Page += String(cli_ssid);
-    Page += F("<br />\n");
-    Page += F("CLI MAC = ");
-    Page += WiFi.macAddress();
-    Page += F("<br />\n");
-    Page += F("IP addr = ");
-    Page += toStringIp(WiFi.localIP());
-    Page += F("</p>\n");
-  }
   Page += F(
     "<p style=\"text-align: center;\"><a href=\"/\">Retour...</a></p>\n"
-    "<p style=\"text-align: center;\">Copyright &copy; 2021 - Gauthier Brière</p>\n"
-  );  
-  Page += F("</body>\n</html>\n");
+  );
   //--------------------------------------------------------------------------------
+  Page += piedPage();
+  //--------------------------------------------------------------------------------
+
   server.send(200, "text/html", Page);  
 }

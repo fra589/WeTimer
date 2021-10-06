@@ -23,6 +23,7 @@
 #ifndef javaScript_h
   #define javaScript_h
 
+  void handleScript();
   String app_script();
 
 #endif // javaScript_h

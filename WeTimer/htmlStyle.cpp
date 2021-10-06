@@ -25,11 +25,42 @@
 /*--------------------------------------------------------------------------------------------------*/
 /*                                    HTML styles definitions                                       */
 /*--------------------------------------------------------------------------------------------------*/
+void handleStyle() {
+  server.send(200, "text/css", app_style());
+}
+
+
 String app_style() {
   String style = F(
     "<style type=\"text/css\">\n"
     ":root {\n"
-    "  background-color: #f0f0f0;\n"
+    "  font-family: sans-serif;\n"
+    "}\n"
+    "body {\n"
+    "  margin: 0;\n"
+    "  background-color: #d0e5ff;\n"
+    "}\n"
+    "h1 {\n"
+    "  margin-left: 7px;\n"
+    "  margin-bottom: 0;\n"
+    "}\n"
+    ".span_title {\n"
+    "  float; left;\n"
+    "  background: rgb(0,0,62);\n"
+    "  background: linear-gradient(90deg, rgb(0, 0, 62) 0%, rgb(0, 0, 127) 63%, rgb(255, 0, 0) 100%);\n"
+    "  background-clip: border-box;\n"
+    "  -webkit-background-clip: text;\n"
+    "  -webkit-text-fill-color: transparent;\n"
+    "}\n"
+    ".p0 {\n"
+    "  text-align:center;\n"
+    "  margin: 0px;\n"
+    "  margin-top: -10px;\n"
+    "}\n"
+    ".p1 {\n"
+    "  text-align: center;\n"
+    "  font-style: italic;\n"
+    "  margin: 0;\n"
     "}\n"
     ".centreur {\n"
     "  display: table;\n"
@@ -113,6 +144,18 @@ String app_style() {
     "  text-align: right;\n"
     "  width: 15%;\n"
     "  background-color: #f0f0f0;\n"
+    "}\n"
+    "input[name=\"tempsVol\"] {\n"
+    "  background-color: lightblue;\n"
+    "  font-weight: bold;\n"
+    "}\n"
+    "label[for=\"tempsVol\"] {\n"
+    "  font-weight: bold;\n"
+    "}\n"
+    ".timer_status {\n"
+    "  font-weight: bold;\n"
+    "  color: #900000;\n"
+    "  font-size: 140%;\n"
     "}\n"
     "</style>\n"
   );

@@ -23,6 +23,9 @@
   #define handleHttp_h
 
   bool captivePortal();
+  String htmlEntete();
+  String netStatus();
+  String piedPage();
   void handleNotFound();
   void handleRDT();
   void handleSetservo();

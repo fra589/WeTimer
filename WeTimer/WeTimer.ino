@@ -204,6 +204,9 @@ void setup() {
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
   server.on("/", handleRoot);
+  server.on("/style.css", handleStyle);
+  server.on("/script.js", handleScript);
+  server.on("/config", handleConfig);
   server.on("/setparams", handleSetParams);
   server.on("/wifi", handleWiFi);
   server.on("/rdt", handleRDT);

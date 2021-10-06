@@ -2,7 +2,7 @@
 /*                                                                       */
 /* Copyright (C) 2021 Gauthier Brière  (gauthier.briere "at" gmail.com)  */
 /*                                                                       */
-/* This file: htmlStyle.h is part of WeTimer                             */
+/* This file: handleConfig.h is part of WeTimer                            */
 /*                                                                       */
 /* WeTimer is free software: you can redistribute it and/or modify it    */
 /* under the terms of the GNU General Public License as published by     */
@@ -19,11 +19,9 @@
 /*                                                                       */
 /*************************************************************************/
 
+#ifndef handleConfig_h
+  #define handleConfig_h
 
-#ifndef htmlStyle_h
-  #define htmlStyle_h
+  void handleConfig();
 
-  void handleStyle();
-  String app_style();
-
-#endif // htmlStyle_h
+#endif // handleConfig_h
