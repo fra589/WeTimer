@@ -107,3 +107,25 @@ void EEPROM_writeStr(int address, char *value, int len) {
     EEPROM.write(address + i, value[i]);
   }  
 }
+
+double getTensionBatterie() {
+  // Détermine la tension de batterie si connecté...
+  const int analogInPin = A0;           // ESP8266 Analog Pin ADC0 = A0
+  int analogValue = 0;                  // valeur lue sur A0 (0 to 1024 for 0 to 3.3v)
+  // Calcul du voltage sur la pin.
+  const double valueToVolts = 3.3/1024;
+  // Diviseur de tension :
+  // Résistance 22k (rouge/rouge/orange) au moins,
+  // résistance 10k (marron/noir/orange) au plus,
+  // point millieu sur A0
+  const double correctionTension = (22000.0+10000.0)/22000.0; // 1.4545...
+  // Determination empirique d'un coeeficient pour avoir la "bonne" valeur...
+  const double correctionErreur = 0.934;
+
+  double voltage;
+
+  analogValue = analogRead(analogInPin);
+  voltage = double(analogValue) * valueToVolts * correctionTension * correctionErreur;
+
+  return voltage;
+}
