@@ -11,4 +11,12 @@ Cette connexion WiFi permet égalament d'activer la fonctionalité de déthermal
 <img src="../master/doc/images/WeTimer_proto01_recto.jpg" width="36%" height="36%"> <img src="../master/doc/images/WeTimer_proto01_verso.jpg" width="36%" height="36%"> <img src="../master/doc/images/WeTimer_proto01_servo.jpg" width="20.3%" height="20.3%">
 </p>
 
-La notice d'utilisation de cette minuterie est ici : [Notice WeTimer v0.9.4.pdf](https://github.com/fra589/WeTimer/blob/master/doc/Notice%20WeTimer%20v0.9.4.pdf)
+La notice d'utilisation de cette minuterie est ici : [Notice WeTimer v0.9.4.pdf](https://github.com/fra589/WeTimer/blob/master/doc/Notice%20WeTimer%20v0.9.4.pdf)<br />
+La documentation d'installation logiciel et de rogramation de la carte microcontroleur est ici : [Installation WeTimer.pdf](https://github.com/fra589/WeTimer/blob/master/doc/Installation%20WeTimer.pdf)
+<br />
+<br />
+
+<p align="center"><font size="3">Bons vols avec WeTimer !</font></p>
+
+<br />
+<br />
