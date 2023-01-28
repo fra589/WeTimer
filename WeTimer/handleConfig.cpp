@@ -22,6 +22,7 @@
 #include <Arduino.h>
 #include "WeTimer.h"
 
+#define NB_CONFIG_ITEMS 8
 /** Handle root or redirect to captive portal */
 void handleConfig() {
   
@@ -32,7 +33,8 @@ void handleConfig() {
     F("servoStabTreuil"),
     F("servoStabDT"),
     F("servoDeriveVol"),
-    F("servoDeriveTreuil")
+    F("servoDeriveTreuil"),
+    F("servoDeriveZoom")
   };
   const String inputLabels[] = {
     F("Armement (s)"),
@@ -41,9 +43,10 @@ void handleConfig() {
     F("Servo stab treuil (μs)"),
     F("Servo stab DT (μs)"),
     F("Servo derive vol (μs)"),
-    F("Servo derive treuil (μs)")
+    F("Servo derive treuil (μs)"),
+    F("Servo derive zoom (μs)")
   };
-  String inputValues[7];
+  String inputValues[NB_CONFIG_ITEMS];
   inputValues[0] = String(delaiArmement);
   inputValues[1] = String(tempsVol);
   inputValues[2] = String(servoStabVol);
@@ -51,7 +54,8 @@ void handleConfig() {
   inputValues[4] = String(servoStabDT);
   inputValues[5] = String(servoDeriveVol);
   inputValues[6] = String(servoDeriveTreuil);
-  String minValues[7];
+  inputValues[7] = String(servoDeriveZoom);
+  String minValues[NB_CONFIG_ITEMS];
   minValues[0] = String(0);
   minValues[1] = String(0);
   minValues[2] = String(MIN_SERVO_MICROSECONDS);
@@ -59,7 +63,8 @@ void handleConfig() {
   minValues[4] = String(MIN_SERVO_MICROSECONDS);
   minValues[5] = String(MIN_SERVO_MICROSECONDS);
   minValues[6] = String(MIN_SERVO_MICROSECONDS);
-  String maxValues[7];
+  minValues[7] = String(MIN_SERVO_MICROSECONDS);
+  String maxValues[NB_CONFIG_ITEMS];
   maxValues[0] = String(9999);
   maxValues[1] = String(9999);
   maxValues[2] = String(MAX_SERVO_MICROSECONDS);
@@ -67,6 +72,7 @@ void handleConfig() {
   maxValues[4] = String(MAX_SERVO_MICROSECONDS);
   maxValues[5] = String(MAX_SERVO_MICROSECONDS);
   maxValues[6] = String(MAX_SERVO_MICROSECONDS);
+  maxValues[7] = String(MAX_SERVO_MICROSECONDS);
 
   //--------------------------------------------------------------------------------
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -82,7 +88,7 @@ void handleConfig() {
     "<div style=\"text-align: center !important;\">\n"
   );
   //--------------------------------------------------------------------------------
-  for (int i=0; i<7; i++) {
+  for (int i=0; i<NB_CONFIG_ITEMS; i++) {
     Page += F("<div class=\"nomargin\"><label for=\"");
     Page += inputNames[i];
     Page += F("\" onclick=\"doubleHeight('");

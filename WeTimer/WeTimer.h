@@ -39,12 +39,12 @@
   #include "handleWiFi.h"
 
   // Pour debug sur port série
-  #define debug
+  //#define debug
   
   #define ORG_NAME           "fra589"
   #define APP_NAME           "WeTimer\0"
-  #define APP_VERSION_STRING "v0.9.5"
-  #define APP_VERSION_DATE   "20211002"
+  #define APP_VERSION_STRING "v0.9.6"
+  #define APP_VERSION_DATE   "20230128"
   
   
   //----------------------------------------------------------------------------------------------------
@@ -59,10 +59,11 @@
   #define ADDR_SERVO_STAB_DT        8
   #define ADDR_SERVO_DERIVE_VOL    10
   #define ADDR_SERVO_DERIVE_TREUIL 12
-  #define ADDR_CLI_SSID            14
-  #define ADDR_CLI_PWD             46 //  14 + 32
-  #define ADDR_AP_SSID            109 //  46 + 63
-  #define ADDR_AP_PWD             141 // 109 + 32
+  #define ADDR_SERVO_DERIVE_ZOOM   14
+  #define ADDR_CLI_SSID            16
+  #define ADDR_CLI_PWD             48 //  16 + 32
+  #define ADDR_AP_SSID            111 //  48 + 63
+  #define ADDR_AP_PWD             143 // 111 + 32
   
   //----------------------------------------------------------------------------------------------------
   // Valeurs des paramètres par défauts
@@ -74,6 +75,7 @@
   #define DEFAULT_SERVO_STAB_DT       2000   // Position servo au DT (2000 micro secondes = angle max du servo)
   #define DEFAULT_SERVO_DERIVE_VOL    1100   // Position servo de dérive en vol spirale
   #define DEFAULT_SERVO_DERIVE_TREUIL 1500   // Position servo de dérive câble tendu (montée droite)
+  #define DEFAULT_SERVO_DERIVE_ZOOM   1300   // Position servo de dérive câble tendu au zoom
   #define DEFAULT_CLI_SSID "\0"              // SSID client (la minuterie se connecte si défini)
   #define DEFAULT_CLI_PWD  "\0"              // WPA-PSK/WPA2-PSK client
   #define DEFAULT_AP_SSID  "WeTimer_\0"      // SSID de l'AP minuterie
@@ -96,16 +98,23 @@
   #define CROCHET_TENDU 0
   #define CROCHET_RELACHE 1
 
-
+  //----------------------------------------------------------------------------------------------------
+  // Valeurs d'état du switch zoom
+  //----------------------------------------------------------------------------------------------------
+  #define ZOOM_ON 0
+  #define ZOOM_OFF 1
+  
   //----------------------------------------------------------------------------------------------------
   // Hardware mapping :
   // Proto N°2 Servo stab sur D2, servi dérive sur D1 et Switch crochet entre D7 et D8
+  // Proto N°3 avec switch zoom entre D5 et D6
   //----------------------------------------------------------------------------------------------------
-  #define PIN_SERVO_STAB    4 // D2 == GPIO4
-  #define PIN_SERVO_DERIVE  5 // D1 == GPIO5
-  #define PIN_SWITCH       13 // D7 == GPI13
-  #define GND_SWITCH       15 // D8 == GPI15
-
+  #define PIN_SERVO_STAB    4 // D2 == GPIO04
+  #define PIN_SERVO_DERIVE  5 // D1 == GPIO05
+  #define GND_SWITCH       15 // D8 == GPIO15
+  #define PIN_SWITCH       13 // D7 == GPIO13
+  #define GND_ZOOM         15 // D8 == GPIO15
+  #define PIN_ZOOM         12 // D6 == GPIO12
 
   //----------------------------------------------------------------------------------------------------
   // Variables globales
@@ -122,6 +131,7 @@
   extern unsigned int servoStabDT;
   extern unsigned int servoDeriveVol;
   extern unsigned int servoDeriveTreuil;
+  extern unsigned int servoDeriveZoom;
   
   // hostname for mDNS. Should work at least on windows. Try http://minuterie.local
   extern const char *myHostname;

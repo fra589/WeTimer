@@ -37,6 +37,7 @@ unsigned int  servoStabTreuil   = DEFAULT_SERVO_STAB_TREUIL;   // Microsecondes
 unsigned int  servoStabDT       = DEFAULT_SERVO_STAB_DT;       // Microsecondes
 unsigned int  servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;    // Microsecondes
 unsigned int  servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL; // Microsecondes
+unsigned int  servoDeriveZoom   = DEFAULT_SERVO_DERIVE_ZOOM;   // Microsecondes
 
 /* hostname for mDNS. Should work at least on windows. Try http://minuterie.local */
 const char *myHostname = APP_NAME;
@@ -54,6 +55,7 @@ IPAddress netMsk(255, 255, 255, 0);
 
 unsigned long debut;
 int crochet = 0;
+int zoom    = 0;
 
 Servo servoStab;   // Variable globale servo stabilisateur
 Servo servoDerive; // Servo pour la dérive
@@ -88,6 +90,7 @@ void setup() {
   servoStabDT       = EEPROM_readInt(ADDR_SERVO_STAB_DT);       if (servoStabDT       == 0xFFFF) servoStabDT       = DEFAULT_SERVO_STAB_DT;
   servoDeriveVol    = EEPROM_readInt(ADDR_SERVO_DERIVE_VOL);    if (servoDeriveVol    == 0xFFFF) servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;
   servoDeriveTreuil = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL); if (servoDeriveTreuil == 0xFFFF) servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL;
+  servoDeriveZoom   = EEPROM_readInt(ADDR_SERVO_DERIVE_ZOOM);   if (servoDeriveZoom   == 0xFFFF) servoDeriveZoom   = DEFAULT_SERVO_DERIVE_ZOOM;
   
   char charTmp = char(EEPROM.read(ADDR_CLI_SSID));
   if (charTmp != 0xFF) {
@@ -147,6 +150,10 @@ void setup() {
   pinMode(PIN_SWITCH, INPUT_PULLUP);
   pinMode(GND_SWITCH, OUTPUT);
   digitalWrite(GND_SWITCH, LOW);
+  
+  pinMode(PIN_ZOOM, INPUT_PULLUP);
+  pinMode(GND_ZOOM, OUTPUT);
+  digitalWrite(GND_ZOOM, LOW);
   
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, ledState);
@@ -237,6 +244,8 @@ void loop() {
   
   // Actions de la minuterie
   int new_crochet = digitalRead(PIN_SWITCH);
+  int new_zoom    = digitalRead(PIN_ZOOM);
+  
   if (new_crochet != crochet) {
     // Détecte les changement d'état du switch du crochet
     if (new_crochet == CROCHET_TENDU) {
@@ -304,6 +313,31 @@ void loop() {
     #endif
     crochet = new_crochet;
   } // if (new_crochet != crochet)
+
+  if (new_zoom != zoom) {
+    // Détecte les changement d'état du switch du zoom
+    if ((new_zoom == ZOOM_ON) && (crochet == CROCHET_TENDU)) {
+      // Servo dérive en position zoom
+      servoDerive.writeMicroseconds(servoDeriveZoom);
+      #ifdef debug
+        Serial.print("Activation zoom : Dérive en position zoom, servoDeriveZoom = "); Serial.println(servoDeriveZoom);
+      #endif
+    } else if ((new_zoom == ZOOM_OFF) && (crochet == CROCHET_TENDU)) {
+      // Servo dérive en position treuil
+      servoDerive.writeMicroseconds(servoDeriveTreuil);
+      #ifdef debug
+        Serial.print("Désactivation zoom : Dérive en position treuil, servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
+      #endif
+    } else {
+      // Crochet détendu, servo dérive en position vol quelque soit l'état du switch zoom.
+      servoDerive.writeMicroseconds(servoDeriveVol);
+      #ifdef debug
+        Serial.print("Crochet détendu, zoom inactif : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
+      #endif
+    }
+    zoom = new_zoom;
+  } // if (new_zoom != zoom)
+
   // Si le crochet est tendu depuis plus de "delaiArmement" et le status "STATUS_ARMEE", on passe en status STATUS_TREUIL
   if ((timerStatus == STATUS_ARMEE) and (crochet == CROCHET_TENDU) and ((millis() - debut) > delaiArmement * 1000)) {
     timerStatus = STATUS_TREUIL;

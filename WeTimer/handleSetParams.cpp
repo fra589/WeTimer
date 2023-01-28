@@ -128,6 +128,18 @@ void handleSetParams() {
           Serial.flush();
         #endif
       }
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveZoom", (size_t)15) == 0) {
+      unsigned int newServoDeriveZoom = server.arg(i).toInt();
+      if ((servoDeriveZoom != newServoDeriveZoom) and (newServoDeriveZoom >= MIN_SERVO_MICROSECONDS) and (newServoDeriveZoom <= MAX_SERVO_MICROSECONDS)) {
+        servoDeriveZoom = newServoDeriveZoom;
+        parmUpdated = true;
+        EEPROM_writeInt(ADDR_SERVO_DERIVE_ZOOM, servoDeriveZoom);
+        #ifdef debug
+          Serial.print("Mise à jour servoDeriveZoom = ");
+          Serial.println(servoDeriveZoom);
+          Serial.flush();
+        #endif
+      }
     } else if (strncasecmp(server.argName(i).c_str(), "ap_ssid", (size_t)7) == 0) {
       if (strncmp(ap_ssid, server.arg(i).c_str(), 32) != 0) {
         if (server.arg(i).length() == 0) {
