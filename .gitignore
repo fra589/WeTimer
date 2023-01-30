@@ -2,4 +2,5 @@
 *.zip
 *.o
 *.bin
+build
 builds
