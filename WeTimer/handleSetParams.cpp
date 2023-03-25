@@ -116,15 +116,27 @@ void handleSetParams() {
           Serial.flush();
         #endif
       }
-    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuil", (size_t)17) == 0) {
-      unsigned int newServoDeriveTreuil = server.arg(i).toInt();
-      if ((servoDeriveTreuil != newServoDeriveTreuil) and (newServoDeriveTreuil >= MIN_SERVO_MICROSECONDS) and (newServoDeriveTreuil <= MAX_SERVO_MICROSECONDS)) {
-        servoDeriveTreuil = newServoDeriveTreuil;
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilTendu", (size_t)17) == 0) {
+      unsigned int newServoDeriveTreuilTendu = server.arg(i).toInt();
+      if ((servoDeriveTreuilTendu != newServoDeriveTreuilTendu) and (newServoDeriveTreuilTendu >= MIN_SERVO_MICROSECONDS) and (newServoDeriveTreuilTendu <= MAX_SERVO_MICROSECONDS)) {
+        servoDeriveTreuilTendu = newServoDeriveTreuilTendu;
         parmUpdated = true;
-        EEPROM_writeInt(ADDR_SERVO_DERIVE_TREUIL, servoDeriveTreuil);
+        EEPROM_writeInt(ADDR_SERVO_DERIVE_TREUIL_TENDU, servoDeriveTreuilTendu);
         #ifdef debug
-          Serial.print("Mise à jour servoDeriveTreuil = ");
-          Serial.println(servoDeriveTreuil);
+          Serial.print("Mise à jour servoDeriveTreuilTendu = ");
+          Serial.println(servoDeriveTreuilTendu);
+          Serial.flush();
+        #endif
+      }
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilVirage", (size_t)17) == 0) {
+      unsigned int newservoDeriveTreuilVirage = server.arg(i).toInt();
+      if ((servoDeriveTreuilVirage != newservoDeriveTreuilVirage) and (newservoDeriveTreuilVirage >= MIN_SERVO_MICROSECONDS) and (newservoDeriveTreuilVirage <= MAX_SERVO_MICROSECONDS)) {
+        servoDeriveTreuilVirage = newservoDeriveTreuilVirage;
+        parmUpdated = true;
+        EEPROM_writeInt(ADDR_SERVO_DERIVE_TREUIL_VIRAGE, servoDeriveTreuilVirage);
+        #ifdef debug
+          Serial.print("Mise à jour servoDeriveTreuilVirage = ");
+          Serial.println(servoDeriveTreuilVirage);
           Serial.flush();
         #endif
       }

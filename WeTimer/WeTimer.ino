@@ -30,14 +30,15 @@ char cli_pwd[63]  = DEFAULT_CLI_PWD;
 char ap_ssid[32]  = DEFAULT_AP_SSID;
 char ap_pwd[63]   = DEFAULT_AP_PWD;
 
-unsigned int  delaiArmement     = DEFAULT_TEMPS_ARMEMENT;      // Secondes
-unsigned int  tempsVol          = DEFAULT_TEMPS_VOL;           // Secondes
-unsigned int  servoStabVol      = DEFAULT_SERVO_STAB_VOL;      // Microsecondes
-unsigned int  servoStabTreuil   = DEFAULT_SERVO_STAB_TREUIL;   // Microsecondes
-unsigned int  servoStabDT       = DEFAULT_SERVO_STAB_DT;       // Microsecondes
-unsigned int  servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;    // Microsecondes
-unsigned int  servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL; // Microsecondes
-unsigned int  servoDeriveZoom   = DEFAULT_SERVO_DERIVE_ZOOM;   // Microsecondes
+unsigned int  delaiArmement           = DEFAULT_TEMPS_ARMEMENT;             // Secondes
+unsigned int  tempsVol                = DEFAULT_TEMPS_VOL;                  // Secondes
+unsigned int  servoStabVol            = DEFAULT_SERVO_STAB_VOL;             // Microsecondes
+unsigned int  servoStabTreuil         = DEFAULT_SERVO_STAB_TREUIL;          // Microsecondes
+unsigned int  servoStabDT             = DEFAULT_SERVO_STAB_DT;              // Microsecondes
+unsigned int  servoDeriveVol          = DEFAULT_SERVO_DERIVE_VOL;           // Microsecondes
+unsigned int  servoDeriveTreuilTendu  = DEFAULT_SERVO_DERIVE_TREUIL_TENDU;  // Microsecondes
+unsigned int  servoDeriveTreuilVirage = DEFAULT_SERVO_DERIVE_TREUIL_VIRAGE; // Microsecondes
+unsigned int  servoDeriveZoom         = DEFAULT_SERVO_DERIVE_ZOOM;          // Microsecondes
 
 /* hostname for mDNS. Should work at least on windows. Try http://minuterie.local */
 const char *myHostname = APP_NAME;
@@ -60,7 +61,8 @@ int zoom    = 0;
 Servo servoStab;   // Variable globale servo stabilisateur
 Servo servoDerive; // Servo pour la dérive
 
-int timerStatus = STATUS_DT;
+int  timerStatus = STATUS_DT;
+bool flagZoom    = false;
 
 unsigned long blinkInterval = 1000; // 1 secondes
 unsigned long previousBlink = 0;
@@ -83,14 +85,15 @@ void setup() {
   EEPROM.begin(EEPROM_LENGTH);
   
   // Récupération des paramètres dans la Flash ou de leur valeur par défaut
-  delaiArmement     = EEPROM_readInt(ADDR_TEMPS_ARMEMENT);      if (delaiArmement     == 0xFFFF) delaiArmement     = DEFAULT_TEMPS_ARMEMENT;
-  tempsVol          = EEPROM_readInt(ADDR_TEMPS_VOL);           if (tempsVol          == 0xFFFF) tempsVol          = DEFAULT_TEMPS_VOL;
-  servoStabVol      = EEPROM_readInt(ADDR_SERVO_STAB_VOL);      if (servoStabVol      == 0xFFFF) servoStabVol      = DEFAULT_SERVO_STAB_VOL;
-  servoStabTreuil   = EEPROM_readInt(ADDR_SERVO_STAB_TREUIL);   if (servoStabTreuil   == 0xFFFF) servoStabTreuil   = DEFAULT_SERVO_STAB_TREUIL;
-  servoStabDT       = EEPROM_readInt(ADDR_SERVO_STAB_DT);       if (servoStabDT       == 0xFFFF) servoStabDT       = DEFAULT_SERVO_STAB_DT;
-  servoDeriveVol    = EEPROM_readInt(ADDR_SERVO_DERIVE_VOL);    if (servoDeriveVol    == 0xFFFF) servoDeriveVol    = DEFAULT_SERVO_DERIVE_VOL;
-  servoDeriveTreuil = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL); if (servoDeriveTreuil == 0xFFFF) servoDeriveTreuil = DEFAULT_SERVO_DERIVE_TREUIL;
-  servoDeriveZoom   = EEPROM_readInt(ADDR_SERVO_DERIVE_ZOOM);   if (servoDeriveZoom   == 0xFFFF) servoDeriveZoom   = DEFAULT_SERVO_DERIVE_ZOOM;
+  delaiArmement           = EEPROM_readInt(ADDR_TEMPS_ARMEMENT);             if (delaiArmement           == 0xFFFF) delaiArmement           = DEFAULT_TEMPS_ARMEMENT;
+  tempsVol                = EEPROM_readInt(ADDR_TEMPS_VOL);                  if (tempsVol                == 0xFFFF) tempsVol                = DEFAULT_TEMPS_VOL;
+  servoStabVol            = EEPROM_readInt(ADDR_SERVO_STAB_VOL);             if (servoStabVol            == 0xFFFF) servoStabVol            = DEFAULT_SERVO_STAB_VOL;
+  servoStabTreuil         = EEPROM_readInt(ADDR_SERVO_STAB_TREUIL);          if (servoStabTreuil         == 0xFFFF) servoStabTreuil         = DEFAULT_SERVO_STAB_TREUIL;
+  servoStabDT             = EEPROM_readInt(ADDR_SERVO_STAB_DT);              if (servoStabDT             == 0xFFFF) servoStabDT             = DEFAULT_SERVO_STAB_DT;
+  servoDeriveVol          = EEPROM_readInt(ADDR_SERVO_DERIVE_VOL);           if (servoDeriveVol          == 0xFFFF) servoDeriveVol          = DEFAULT_SERVO_DERIVE_VOL;
+  servoDeriveTreuilTendu  = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL_TENDU);  if (servoDeriveTreuilTendu  == 0xFFFF) servoDeriveTreuilTendu  = DEFAULT_SERVO_DERIVE_TREUIL_TENDU;
+  servoDeriveTreuilVirage = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL_VIRAGE); if (servoDeriveTreuilVirage == 0xFFFF) servoDeriveTreuilVirage = DEFAULT_SERVO_DERIVE_TREUIL_VIRAGE;
+  servoDeriveZoom         = EEPROM_readInt(ADDR_SERVO_DERIVE_ZOOM);          if (servoDeriveZoom         == 0xFFFF) servoDeriveZoom         = DEFAULT_SERVO_DERIVE_ZOOM;
   
   char charTmp = char(EEPROM.read(ADDR_CLI_SSID));
   if (charTmp != 0xFF) {
@@ -125,36 +128,38 @@ void setup() {
   }
 
   #ifdef debug
-    Serial.print("delaiArmement     = "); Serial.println(delaiArmement);
-    Serial.print("tempsVol          = "); Serial.println(tempsVol);
-    Serial.print("servoStabVol      = "); Serial.println(servoStabVol);
-    Serial.print("servoStabTreuil   = "); Serial.println(servoStabTreuil);
-    Serial.print("servoStabDT       = "); Serial.println(servoStabDT);
-    Serial.print("servoDeriveVol    = "); Serial.println(servoDeriveVol);
-    Serial.print("servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
-    Serial.print("cli_ssid          = "); Serial.println(cli_ssid);
-    Serial.print("cli_pwd           = "); Serial.println(cli_pwd);
-    Serial.print("ap_ssid           = "); Serial.println(ap_ssid);
-    Serial.print("ap_pwd            = "); Serial.println(ap_pwd);
+    Serial.print("delaiArmement.......... = "); Serial.println(delaiArmement);
+    Serial.print("tempsVol............... = "); Serial.println(tempsVol);
+    Serial.print("servoStabVol........... = "); Serial.println(servoStabVol);
+    Serial.print("servoStabTreuil........ = "); Serial.println(servoStabTreuil);
+    Serial.print("servoStabDT............ = "); Serial.println(servoStabDT);
+    Serial.print("servoDeriveVol......... = "); Serial.println(servoDeriveVol);
+    Serial.print("servoDeriveTreuilTendu. = "); Serial.println(servoDeriveTreuilTendu);
+    Serial.print("servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
+    Serial.print("servoDeriveZoom........ = "); Serial.println(servoDeriveZoom);
+    Serial.print("cli_ssid............... = "); Serial.println(cli_ssid);
+    Serial.print("cli_pwd................ = "); Serial.println(cli_pwd);
+    Serial.print("ap_ssid................ = "); Serial.println(ap_ssid);
+    Serial.print("ap_pwd................. = "); Serial.println(ap_pwd);
   #endif
-  
+
   servoStab.attach(PIN_SERVO_STAB);
   servoStab.writeMicroseconds(servoStabDT);
   servoDerive.attach(PIN_SERVO_DERIVE);
   servoDerive.writeMicroseconds(servoDeriveVol);
   #ifdef debug
-    Serial.print("setup() : Servo stab en position DT ("); Serial.print(servoStabDT); Serial.println(")");
-    Serial.print("setup() : Servo derive en position vol ("); Serial.print(servoDeriveVol); Serial.println(")");
+    Serial.print("setup() : Position initiale Servo stab en position DT ("); Serial.print(servoStabDT); Serial.println(")");
+    Serial.print("setup() : Position initiale Servo derive en position vol ("); Serial.print(servoDeriveVol); Serial.println(")");
   #endif
-  
+
   pinMode(PIN_SWITCH, INPUT_PULLUP);
   pinMode(GND_SWITCH, OUTPUT);
   digitalWrite(GND_SWITCH, LOW);
-  
+
   pinMode(PIN_ZOOM, INPUT_PULLUP);
   pinMode(GND_ZOOM, OUTPUT);
   digitalWrite(GND_ZOOM, LOW);
-  
+
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, ledState);
 
@@ -190,7 +195,7 @@ void setup() {
       Serial.flush();
     #endif
   }
-  
+
   /* AP ouverte si pas de mot de passe. */
   WiFi.softAPConfig(apIP, apIP, netMsk);
   if (ap_pwd[0] == '\0') {
@@ -252,16 +257,17 @@ void loop() {
       // On vient d'enfoncer la pédale du crochet
       // On positionne les 2 servos en mode treuillage
       servoStab.writeMicroseconds(servoStabTreuil);
-      servoDerive.writeMicroseconds(servoDeriveTreuil);
+      servoDerive.writeMicroseconds(servoDeriveTreuilTendu);
       #ifdef debug
-        Serial.print("Tension du crochet : Stab en position treuil,   servoStabTreuil   = "); Serial.println(servoStabTreuil);
-        Serial.print("Tension du crochet : Dérive en position treuil, servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
+        Serial.print("Tension du crochet : Stab en position treuil,   servoStabTreuil   = ");      Serial.println(servoStabTreuil);
+        Serial.print("Tension du crochet : Dérive en position treuil, servoDeriveTreuilTendu = "); Serial.println(servoDeriveTreuilTendu);
       #endif
       if (timerStatus == STATUS_DT) {
         // On était en DT, on arme la minuterie
         timerStatus = STATUS_ARMEE;
         debut = millis();
         blinkInterval = 1000; // 1 secondes
+        flagZoom = false;     // Réinitialise le flag du Zoom
         #ifdef debug
           ////Serial.println("Servo en position départ.");
           Serial.println("timerStatus = STATUS_ARMEE");
@@ -285,17 +291,28 @@ void loop() {
       }
     } else { // new_crochet == CROCHET_RELACHE
       // Le cable vient de se relacher,
-      // On positionne les 2 servos en mode plané si on est pas déthermalisé
       if (timerStatus != STATUS_DT) {
+        // On positionne le servos stab en mode plané si on est pas déthermalisé
         servoStab.writeMicroseconds(servoStabVol);
-        servoDerive.writeMicroseconds(servoDeriveVol);
         #ifdef debug
-          Serial.print("Relâchement du crochet : Stab en position vol,   servoStabVol   = "); Serial.println(servoStabVol);
-          Serial.print("Relâchement du crochet : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
+          Serial.print("Relâchement du crochet : Stab en position vol,             servoStabVol            = "); Serial.println(servoStabVol);
         #endif
+        if (flagZoom) {
+          // Le zoom à été activé, donc c'est sensé être largué. => Dérive en position virage vol.
+          servoDerive.writeMicroseconds(servoDeriveVol);
+          #ifdef debug
+            Serial.print("Relâchement du crochet : Dérive en position vol,           servoDeriveVol          = "); Serial.println(servoDeriveVol);
+          #endif
+        } else {
+          // Le zoom n'a pas encore été activé, on est sensé être encore vérouillé. => Dérive en position virage treuil.
+          servoDerive.writeMicroseconds(servoDeriveTreuilVirage);
+          #ifdef debug
+            Serial.print("Relâchement du crochet : Dérive en position virage treuil, servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
+          #endif
+        }
       }
       if (timerStatus == STATUS_TREUIL) {
-        // Début du vol
+        // Début du vol (ou virage treuil)
         timerStatus = STATUS_VOL;
         debut = millis();
         blinkInterval = 500; // 1/2 secondes
@@ -319,21 +336,30 @@ void loop() {
     if ((new_zoom == ZOOM_ON) && (crochet == CROCHET_TENDU)) {
       // Servo dérive en position zoom
       servoDerive.writeMicroseconds(servoDeriveZoom);
+      flagZoom = true; // Utilisé pour passer du virage treuil au virage plané.
       #ifdef debug
         Serial.print("Activation zoom : Dérive en position zoom, servoDeriveZoom = "); Serial.println(servoDeriveZoom);
       #endif
     } else if ((new_zoom == ZOOM_OFF) && (crochet == CROCHET_TENDU)) {
-      // Servo dérive en position treuil
-      servoDerive.writeMicroseconds(servoDeriveTreuil);
+      // Servo dérive en position treuil tendu
+      servoDerive.writeMicroseconds(servoDeriveTreuilTendu);
       #ifdef debug
-        Serial.print("Désactivation zoom : Dérive en position treuil, servoDeriveTreuil = "); Serial.println(servoDeriveTreuil);
+        Serial.print("Désactivation zoom : Dérive en position treuil, servoDeriveTreuilTendu = "); Serial.println(servoDeriveTreuilTendu);
       #endif
     } else {
-      // Crochet détendu, servo dérive en position vol quelque soit l'état du switch zoom.
-      servoDerive.writeMicroseconds(servoDeriveVol);
-      #ifdef debug
-        Serial.print("Crochet détendu, zoom inactif : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
-      #endif
+      if (flagZoom) {
+        // Le zoom à été activé, donc c'est sensé être largué. => Dérive en position virage vol.
+        servoDerive.writeMicroseconds(servoDeriveVol);
+        #ifdef debug
+          Serial.print("Crochet détendu, zoom inactif : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
+        #endif
+      } else {
+        // Le zoom n'a pas encore été activé, on est sensé être encore vérouillé. => Dérive en position virage treuil.
+        servoDerive.writeMicroseconds(servoDeriveTreuilVirage);
+        #ifdef debug
+          Serial.print("Crochet détendu, zoom inactif : Dérive en position virage treuil, servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
+        #endif
+      }
     }
     zoom = new_zoom;
   } // if (new_zoom != zoom)

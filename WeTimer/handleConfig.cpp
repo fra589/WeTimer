@@ -22,7 +22,7 @@
 #include <Arduino.h>
 #include "WeTimer.h"
 
-#define NB_CONFIG_ITEMS 8
+#define NB_CONFIG_ITEMS 9
 /** Handle root or redirect to captive portal */
 void handleConfig() {
   
@@ -33,7 +33,8 @@ void handleConfig() {
     F("servoStabTreuil"),
     F("servoStabDT"),
     F("servoDeriveVol"),
-    F("servoDeriveTreuil"),
+    F("servoDeriveTreuilTendu"),
+    F("servoDeriveTreuilVirage"),
     F("servoDeriveZoom")
   };
   const String inputLabels[] = {
@@ -43,7 +44,8 @@ void handleConfig() {
     F("Servo stab treuil (μs)"),
     F("Servo stab DT (μs)"),
     F("Servo derive vol (μs)"),
-    F("Servo derive treuil (μs)"),
+    F("Servo drv treuil tendu"),
+    F("Servo drv treuil virage"),
     F("Servo derive zoom (μs)")
   };
   String inputValues[NB_CONFIG_ITEMS];
@@ -53,8 +55,9 @@ void handleConfig() {
   inputValues[3] = String(servoStabTreuil);
   inputValues[4] = String(servoStabDT);
   inputValues[5] = String(servoDeriveVol);
-  inputValues[6] = String(servoDeriveTreuil);
-  inputValues[7] = String(servoDeriveZoom);
+  inputValues[6] = String(servoDeriveTreuilTendu);
+  inputValues[7] = String(servoDeriveTreuilVirage);
+  inputValues[8] = String(servoDeriveZoom);
   String minValues[NB_CONFIG_ITEMS];
   minValues[0] = String(0);
   minValues[1] = String(0);
@@ -64,6 +67,7 @@ void handleConfig() {
   minValues[5] = String(MIN_SERVO_MICROSECONDS);
   minValues[6] = String(MIN_SERVO_MICROSECONDS);
   minValues[7] = String(MIN_SERVO_MICROSECONDS);
+  minValues[8] = String(MIN_SERVO_MICROSECONDS);
   String maxValues[NB_CONFIG_ITEMS];
   maxValues[0] = String(9999);
   maxValues[1] = String(9999);
@@ -73,6 +77,7 @@ void handleConfig() {
   maxValues[5] = String(MAX_SERVO_MICROSECONDS);
   maxValues[6] = String(MAX_SERVO_MICROSECONDS);
   maxValues[7] = String(MAX_SERVO_MICROSECONDS);
+  maxValues[8] = String(MAX_SERVO_MICROSECONDS);
 
   //--------------------------------------------------------------------------------
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");

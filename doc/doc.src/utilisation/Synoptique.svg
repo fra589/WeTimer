@@ -13,7 +13,7 @@
    version="1.1"
    id="svg1126"
    inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
-   sodipodi:docname="Synoptique fonctionnement.svg">
+   sodipodi:docname="Synoptique.svg">
   <defs
      id="defs1120">
     <marker
@@ -183,9 +183,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98778175"
-     inkscape:cx="378.89317"
-     inkscape:cy="421.14566"
+     inkscape:zoom="0.96071924"
+     inkscape:cx="358.0113"
+     inkscape:cy="417.49382"
      inkscape:document-units="px"
      inkscape:current-layer="g2160"
      showgrid="true"
@@ -214,7 +214,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -230,7 +230,7 @@
          style="fill:#abccd8;fill-opacity:1;stroke:#3f3f3f;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
          id="rect1632"
          width="385"
-         height="29.999989"
+         height="44.999989"
          x="315.6496"
          y="690" />
       <rect
@@ -362,7 +362,12 @@
            x="311.90683"
            y="396.89053"
            style="font-size:13.3333px"
-           id="tspan887">- servo de dérive reste position vol.</tspan></text>
+           id="tspan887">- servo de dérive reste position vol.</tspan><tspan
+           sodipodi:role="line"
+           x="311.90683"
+           y="413.55716"
+           style="font-size:13.3333px"
+           id="tspan1102">- réinitialisation zoom =&gt; crochet fermé</tspan></text>
       <rect
          style="fill:#ff7f7f;fill-opacity:1;stroke:#3f3f3f;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"
          id="rect891"
@@ -547,31 +552,36 @@
       <rect
          style="fill:#abccd8;fill-opacity:1;stroke:#3f3f3f;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
          id="rect2005"
-         width="530"
-         height="110.00001"
-         x="93.124443"
-         y="733.22443" />
+         width="580"
+         height="98.224495"
+         x="95.649605"
+         y="745" />
       <text
          xml:space="preserve"
          style="font-size:13.3333px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';letter-spacing:0px;word-spacing:0px"
          x="306.92038"
-         y="751.42303"
+         y="761.42303"
          id="text957"><tspan
            sodipodi:role="line"
            id="tspan951"
            x="306.92038"
-           y="751.42303"
+           y="761.42303"
            style="font-size:13.3333px">Minuterie en &quot;mode Vol&quot; :</tspan><tspan
            sodipodi:role="line"
            x="306.92038"
-           y="768.08966"
+           y="778.08966"
            id="tspan953"
            style="font-size:13.3333px">- servo stabilisateur passe en position vol,</tspan><tspan
            sodipodi:role="line"
            x="306.92038"
-           y="784.75629"
+           y="794.75629"
            style="font-size:13.3333px"
-           id="tspan955">- servo de dérive passe en position vol.</tspan></text>
+           id="tspan955">- si crochet fermé =&gt; dérive en position virage treuil,</tspan><tspan
+           sodipodi:role="line"
+           x="306.92038"
+           y="811.42291"
+           style="font-size:13.3333px"
+           id="tspan1104">- si crochet ouvert =&gt;dérive n position virage vol.</tspan></text>
       <rect
          style="fill:#ff7f7f;fill-opacity:1;stroke:#3f3f3f;stroke-width:3;stroke-linecap:round;stroke-linejoin:round"
          id="rect959"
@@ -645,29 +655,29 @@
          transform="translate(0,30)">
         <path
            style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1710)"
-           d="m 168.12445,798.22441 v -35 h 130"
+           d="m 265.64961,799.99999 30,-25"
            id="path1018"
-           sodipodi:nodetypes="ccc" />
+           sodipodi:nodetypes="cc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#Arrow1Mstart)"
-           d="m 428.12445,798.22441 v -35 h -130"
+           d="m 325.64961,799.99999 -30,-25"
            id="path1020"
-           sodipodi:nodetypes="ccc" />
+           sodipodi:nodetypes="cc" />
       </g>
       <text
          xml:space="preserve"
          style="font-size:13.3333px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle"
          x="194.36826"
-         y="759.75635"
+         y="769.75635"
          id="text1987"><tspan
            sodipodi:role="line"
            x="194.36826"
-           y="759.75635"
+           y="769.75635"
            style="font-size:13.3333px;text-align:center;text-anchor:middle"
            id="tspan1983">La LED clignote</tspan><tspan
            sodipodi:role="line"
            x="194.36826"
-           y="776.42297"
+           y="786.42297"
            style="font-size:13.3333px;text-align:center;text-anchor:middle"
            id="tspan1985">(fréquence 1 secondes)</tspan></text>
       <text
@@ -740,7 +750,7 @@
            id="tspan1695"> switch zoom</tspan></text>
       <path
          style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="M 298.21894,689.99999 V 793.22447"
+         d="m 295.64961,689.99999 0,115"
          id="path1016"
          sodipodi:nodetypes="cc" />
       <g
@@ -759,7 +769,7 @@
       </g>
       <path
          style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="m 165.64961,679.99999 v 10 h 132.56933"
+         d="m 165.64961,679.99999 v 10 l 130,0"
          id="path1630"
          sodipodi:nodetypes="ccc" />
       <path
@@ -769,15 +779,21 @@
          sodipodi:nodetypes="cc" />
       <text
          xml:space="preserve"
-         style="font-size:13.3333px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';letter-spacing:0px;word-spacing:0px"
-         x="366.62653"
-         y="710.38452"
-         id="text1763"><tspan
+         style="font-size:13.6876px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';letter-spacing:0px;word-spacing:0px;stroke-width:1"
+         x="316.81326"
+         y="729.26154"
+         id="text1763"
+         transform="scale(1.026573,0.97411486)"><tspan
            sodipodi:role="line"
-           x="366.62653"
-           y="710.38452"
-           style="font-size:13.3333px"
-           id="tspan1761">- servo de dérive passe en position ZOOM.</tspan></text>
+           x="316.81326"
+           y="729.26154"
+           style="font-size:13.6876px;stroke-width:1"
+           id="tspan1761">- servo de dérive passe en position ZOOM.</tspan><tspan
+           sodipodi:role="line"
+           x="316.81326"
+           y="746.37103"
+           style="font-size:13.6876px;stroke-width:1"
+           id="tspan1064">- Mémorise l'activation du zoom =&gt;croché ouvert</tspan></text>
       <path
          style="fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1785)"
          d="m 405.64961,664.99999 v 25"
