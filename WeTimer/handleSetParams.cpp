@@ -116,7 +116,7 @@ void handleSetParams() {
           Serial.flush();
         #endif
       }
-    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilTendu", (size_t)17) == 0) {
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilTendu", (size_t)22) == 0) {
       unsigned int newServoDeriveTreuilTendu = server.arg(i).toInt();
       if ((servoDeriveTreuilTendu != newServoDeriveTreuilTendu) and (newServoDeriveTreuilTendu >= MIN_SERVO_MICROSECONDS) and (newServoDeriveTreuilTendu <= MAX_SERVO_MICROSECONDS)) {
         servoDeriveTreuilTendu = newServoDeriveTreuilTendu;
@@ -128,7 +128,7 @@ void handleSetParams() {
           Serial.flush();
         #endif
       }
-    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilVirage", (size_t)17) == 0) {
+    } else if (strncasecmp(server.argName(i).c_str(), "servoDeriveTreuilVirage", (size_t)23) == 0) {
       unsigned int newservoDeriveTreuilVirage = server.arg(i).toInt();
       if ((servoDeriveTreuilVirage != newservoDeriveTreuilVirage) and (newservoDeriveTreuilVirage >= MIN_SERVO_MICROSECONDS) and (newservoDeriveTreuilVirage <= MAX_SERVO_MICROSECONDS)) {
         servoDeriveTreuilVirage = newservoDeriveTreuilVirage;

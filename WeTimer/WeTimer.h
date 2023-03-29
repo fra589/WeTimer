@@ -43,7 +43,7 @@
   
   #define ORG_NAME           "fra589"
   #define APP_NAME           "WeTimer\0"
-  #define APP_VERSION_STRING "v0.9.7"
+  #define APP_VERSION_STRING "v0.9.8"
   #define APP_VERSION_DATE   "20230325"
   
   

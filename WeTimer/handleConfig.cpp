@@ -94,6 +94,9 @@ void handleConfig() {
   );
   //--------------------------------------------------------------------------------
   for (int i=0; i<NB_CONFIG_ITEMS; i++) {
+    #ifdef debug
+      Serial.printf("Champ de saisie : inputNames[%d]=%s, inputLabels[%d]=%s, inputValues[%d]=%s\n", i, inputNames[i].c_str(), i, inputLabels[i].c_str(), i, inputValues[i].c_str());
+    #endif
     Page += F("<div class=\"nomargin\"><label for=\"");
     Page += inputNames[i];
     Page += F("\" onclick=\"doubleHeight('");
