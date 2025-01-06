@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<!--
+/****************************************************************************/
+/*                                                                          */
+/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/*                                                                          */
+/* This file: index.html is part of WeTimer / WeDT                          */
+/*                                                                          */
+/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* it under the terms of the GNU General Public License as published by     */
+/* the Free Software Foundation, either version 3 of the License, or        */
+/* (at your option) any later version.                                      */
+/*                                                                          */
+/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
+/* GNU General Public License for more details.                             */
+/*                                                                          */
+/* You should have received a copy of the GNU General Public License        */
+/* along with this program.  If not, see <http://www.gnu.org/licenses/>.    */
+/*                                                                          */
+/****************************************************************************/
+-->
+
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="Minuterie planeur de Vol Libre">
+    <title>WeTimer</title>
+    <link rel="shortcut icon" type="image/svg+xml" href="images/favicon.svg" />
+    <link id="cssMain" rel="stylesheet" type="text/css" href="style.css"/>
+    <script type="text/javascript" src="scripts.js"></script>
+  </head>
+  <body onload="index_onload()" onbeforeunload="index_beforeunload()" onclick="index_onclick()" onresize="index_resize()">
+    <!------------------------------------------------------------------------------------------------>
+    <header>
+      <!--<p class="margin_top">&nbsp;</p>-->
+        <div class="flex_100">
+          <div class="head1">
+            <image id="logo" src="images/logo.svg" onclick="reloadPage1()" />
+          </div>
+          <div class="head2">
+            <h1><span class="span_title">WeTimer</span></h1>
+            <p id="pversion1" class="center">v?.?</p>
+          </div>
+          <div class="head3">
+            <image id="settings" src="images/settings.svg" onclick="showSettings()" />
+          </div>
+        </div>
+      <div class="hr">
+      </div>
+      <!--<hr />-->
+    </header>
+    <!------------------------------------------------------------------------------------------------>
+<div class="pagewrapper">    
+    <div id="la_page">
+      <div id="page_1">
+        <div id="batterie">&nbsp;</div>
+        <div class="led_container">
+          <div>
+          <div id="led1" class="led"></div>
+          <div id="led0" class="led"></div>
+          </div>
+          <span id="ws_state">ws_state</span>
+        </div>
+        <p class="center">
+          <span id="timer_ssid">&nbsp;</span><br />Phase = <span id="timer_status">&nbsp;</span>
+        </p>
+        <div class="hr">
+        </div>
+        <!--<hr />-->
+        <p id="description_page1" class="description">&nbsp;</p>
+        <p class="center">Temp de vol (secondes) <span id="duree_vol">&nbsp;</span></p>
+        <!------------------------------------------------------------------------------------------------>
+        <div id="main_form">
+          <div class="nomargin center">
+            <div class="vertical_space">
+            <div class="flex_100">
+              <input type="number" name="tempVol" id="tempVol"
+                min="1" max="1800" step="1" value="180"
+                onfocus="this.select();"
+                oninput="calculTemps('tempVol', 'tempsMinutes');"
+                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+              />
+              <div class="b1 bm1" tabindex="-1" 
+                onclick="doNothing();"
+                ontouchstart="beginTouch(event, 'tempVol', -1);" 
+                onmousedown="beginChange('tempVol', -1);" 
+                ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
+                onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
+              ></div>
+                <!--value="&nbsp;&lt;&nbsp;"-->
+              <div class="b1 bp1" tabindex="-1" 
+                onclick="doNothing();"
+                ontouchstart="beginTouch(event, 'tempVol',  1);" 
+                onmousedown="beginChange('tempVol',  1);" 
+                ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
+                onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
+              ></div>
+                <!--value="&nbsp;&gt;&nbsp;" -->
+            </div>
+            </div>
+            <div class="vertical_space">
+            <div class="flex_100">
+              <div class="b1 bmm" tabindex="-1" onclick="changeVal('tempVol', -60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+              <div class="b1 bm2" tabindex="-1" onclick="changeVal('tempVol', -10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+              <div class="b1 bp2" tabindex="-1" onclick="changeVal('tempVol',  10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+              <div class="b1 bpm" tabindex="-1" onclick="changeVal('tempVol',  60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+            </div>
+            </div>
+          </div>
+          <p class="center" id="tempsMinutes">0 minute(s) 0 seconde(s)</p>
+          <p>
+            <div class="centreur">
+              <div class="bouton" onclick="XMLHttpRequest_get('/gettempvol');">Relire</div>
+              <div class="bouton" onclick="XMLHttpRequest_post('/settempvol');">Envoi</div>
+            </div>
+            <p></p>
+            <div class="centreur">
+              <div class="container">
+                <div id="btn_rdt" class="btn_rdt btn_rdt_disabled" onclick="sendRDT();"><br />RDT</div>
+                <div id="rdt_on_off"><image id="rdtonoff" src="images/rdtoff.svg" onclick="rd_ton_off(event);" /></div>
+              </div>
+            </div>
+          </p>
+        </div> <!-- main_form -->
+      </div> <!-- page_1 -->
+    <!------------------------------------------------------------------------------------------------>
+      <div id="page_2" class="noshow">
+        <p id="description_page2" class="description"></p>
+        <p><image id="btnMenu" src="images/btnmenu.svg" onclick="showMenu(event);" />Configuration de a minuterie :</p>
+        <span id="saveLinkSpan" class="noshow"><a id="saveLink" href="/getjson" download="wetimer.json">Enregistrer...</a></span>
+        <menu id="menu" class="dropdown noshow">
+          <div class="menuItem" onclick="inputDescription()";><li>Description...</li></div>
+          <hr class="menu_hr" />
+          <div class="menuItem" onclick="saveFile();"><li>Ouvrir...</li></div>
+          <div class="menuItem" onclick="openFile();"><li>Enregistrer...</li></div>
+          <script>
+            var leLien = (location.protocol == "file:") ? netDevURL + "/getjson" : "/getjson";
+            document.getElementById("saveLinkSpan").innerHTML = "<a id='saveLink' href='" + leLien + "' download='wetimer.json'>Enregistrer...</a>";
+          </script>
+          <hr class="menu_hr" />
+          <div class="menuItem" onclick="inputWifi();"><li>Configurer le réseau WiFi</li></div>
+        </menu>
+        <div id="config_form">
+          <table id="tsetup">
+            <thead>
+              <tr>
+                <td>Phases</td>
+                <td>Délais</td>
+                <td>Cumul</td>
+                <td class="tdServoHead" onclick="configServo(1);">Servo1</td>
+                <td class="tdServoHead" onclick="configServo(2);">Servo2</td>
+                <td class="tdServoHead" onclick="configServo(3);">Servo3</td>
+              </tr>
+            </thead>
+            <tbody id="setup_table">
+              <!-- rempli par javascript: updateConfig() -->
+            </tbody>
+          </table>
+          <input type="file" id="fileSelect" accept="application/json" onchange="fileSelected(this)" class="noshow" />
+        </div> <!-- config_form -->
+      </div> <!-- page_2 -->
+    </div> <!-- la_page -->
+    <!------------------------------------------------------------------------------------------------>
+    <div id="pied_page" ondblclick="index_ondblclick()">
+      <p>
+        Minuterie WiFi WeTimer - <span id="pversion2">&nbsp;</span><br />Copyright &copy; 2021-2024 - Gauthier Brière
+      </p>
+    </div> <!-- pied_page -->
+    <!------------------------------------------------------------------------------------------------>
+</div>
+    <div id="dialog_mask" class="noshow" onclick="event.stopPropagation();">
+      <!-- Dialogue de saisie des valeurs de délais -->
+      <div id="input_delai" class="inputBox noshow" onclick="event.stopPropagation();">
+        <p id="input_delai_title" class="inputTitle">&nbsp;</p>
+        <p class="explications">Délais indiqués en secondes avec deux décimales possibles.</p>
+        <div class="nomargin center">
+          <div  class="flex_95">
+            <div class="b2 bm2" tabindex="-1"
+              ontouchstart="beginTouch(event, 'delaiSec', -0.1);" 
+              onmousedown="beginChange('delaiSec',  -0.1);" 
+              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
+              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
+            ></div>
+              <!--value="&nbsp;&lt;&lt;&nbsp;"-->
+            <div class="b2 bm1" tabindex="-1"
+              ontouchstart="beginTouch(event, 'delaiSec', -0.01);" 
+              onmousedown="beginChange('delaiSec',  -0.01);" 
+              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
+              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
+            ></div>
+              <!--value="&nbsp;&lt;&nbsp;"-->
+            <input type="number" name="delaiSec" id="delaiSec"
+              min="0" max="1800" step="0.01" value="0.00"
+              onfocus="this.select();"
+              oninput="calculTemps('delaiSec', 'delaiMinutes', false);"
+              onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+            />
+            <div class="b2 bp1" tabindex="-1"
+              ontouchstart="beginTouch(event, 'delaiSec', 0.01);" 
+              onmousedown="beginChange('delaiSec',  0.01);" 
+              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
+              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
+            ></div>
+              <!--value="&nbsp;&gt;&nbsp;"-->
+            <div class="b2 bp2" tabindex="-1"
+              ontouchstart="beginTouch(event, 'delaiSec', 0.1);" 
+              onmousedown="beginChange('delaiSec',  0.1);" 
+              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
+              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
+            ></div>
+            <!--value="&nbsp;&gt;&gt;&nbsp;"-->
+          </div>
+          <br />
+          <div  class="flex_95">
+            <div class="b2 bmm" tabindex="-1" onclick="changeVal('delaiSec', -60, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+            <div class="b2 bm2" tabindex="-1" onclick="changeVal('delaiSec', -10, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+            <div class="b2 bm1" tabindex="-1" onclick="changeVal('delaiSec', -1, false);    calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+            <div class="b2 bp1" tabindex="-1" onclick="changeVal('delaiSec',  1, false);    calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+            <div class="b2 bp2" tabindex="-1" onclick="changeVal('delaiSec',  10, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+            <div class="b2 bpm" tabindex="-1" onclick="changeVal('delaiSec',  60, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
+          </div>
+        </div>
+        <p class="center" id="delaiMinutes">0 minute(s) 0 seconde(s)</p>
+        <div class="boutonOKAnnuler" >
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="delaiOK();"    value="&nbsp;&nbsp;OK&nbsp;&nbsp;" />
+        </div>
+      </div> <!-- input_delai -->
+      <!-- Dialogue de saisie des configuration de servo (plage de réglages) -->
+      <div id="input_servo" class="inputBox noshow" onclick="event.stopPropagation();">
+        <p id="input_servo_title" class="inputTitle">Amplitude servo</p>
+        <div class="nomargin gauche">
+          <p>Valeurs de programmation :<br />
+            <input type="hidden" id="servoNum"   name="servoNum"   value="0" />
+            <input type="hidden" id="oldCourse1" name="oldCourse1" value="0" />
+            <input type="hidden" id="oldCourse2" name="oldCourse2" value="0" />
+            <input type="hidden" id="oldPwm1"    name="oldPwm1"    value="0" />
+            <input type="hidden" id="oldPwm2"    name="oldPwm2"    value="0" />
+            <div class="flex_100">
+              <label for="course1">Extrémité 1</label>
+              <input type="number" name="course1" id="course1" class="cServoInput"
+                min="-2400" max="2400" step="1" value="544"
+                onfocus="this.select();"
+                oninput="changePlageServo(this.id);"
+                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+              />
+              <div class="b3 bm2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course1', -10);" 
+                onmousedown="beginChange('course1',  -10);" 
+                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
+                onmouseup="stopChange('course1'); changePlageServo('course1')" 
+              ></div>
+                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
+              <div class="b3 bm1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course1', -1);" 
+                onmousedown="beginChange('course1',  -1);" 
+                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
+                onmouseup="stopChange('course1'); changePlageServo('course1')" 
+              ></div>
+                <!--value="&nbsp;&nbsp;&lt;&nbsp;&nbsp;"-->
+              <div class="b3 bp1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course1', 1);" 
+                onmousedown="beginChange('course1',  1);" 
+                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
+                onmouseup="stopChange('course1'); changePlageServo('course1')" 
+              ></div>
+                <!--value="&nbsp;&nbsp;&gt;&nbsp;&nbsp;"-->
+              <div class="b3 bp2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course1', 10);" 
+                onmousedown="beginChange('course1',  10);" 
+                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
+                onmouseup="stopChange('course1'); changePlageServo('course1')" 
+              ></div>
+                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
+            </div>
+            <!--<br />-->
+            <div class="flex_100">
+              <label for="course2">Extrémité 2</label>
+              <input type="number" name="course2" id="course2" class="cServoInput"
+                min="-2400" max="2400" step="1" value="2400"
+                onfocus="this.select();"
+                oninput="changePlageServo(this.id);"
+                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+              />
+              <div class="b3 bm2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course2', -10);" 
+                onmousedown="beginChange('course2',  -10);" 
+                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
+                onmouseup="stopChange('course2'); changePlageServo('course2')" 
+              ></div>
+                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
+              <div class="b3 bm1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course2', -1);" 
+                onmousedown="beginChange('course2',  -1);" 
+                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
+                onmouseup="stopChange('course2'); changePlageServo('course2')" 
+              ></div>
+                <!--value="&nbsp;&nbsp;&lt;&nbsp;&nbsp;"-->
+              <div class="b3 bp1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course2', 1);" 
+                onmousedown="beginChange('course2',  1);" 
+                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
+                onmouseup="stopChange('course2'); changePlageServo('course2')" 
+              ></div>
+                <!--value="&nbsp;&nbsp;&gt;&nbsp;&nbsp;"-->
+              <div class="b3 bp2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'course2', 10);" 
+                onmousedown="beginChange('course2',  10);" 
+                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
+                onmouseup="stopChange('course2'); changePlageServo('course2')" 
+              ></div>
+                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
+            </div>
+          </p>
+          <p>Impulsion PWM (microsecondes) :<br />
+            <div class="pos_relative">
+              <div class="NOtable">
+                <div class="NOrow">
+                  <div class="NOcell">
+                    <input type="hidden" id="oldPwm1" name="oldPwm1" value="0" />
+                    <input type="hidden" id="oldPwm2" name="oldPwm2" value="0" />
+                    <div class="flex_90">
+                      <label for="pwm1">Extrémité 1</label>
+                      <input type="number" name="pwm1" id="pwm1" class="cServoInput"
+                        min="544" max="2400" step="1" value="544"
+                        onfocus="this.select();"
+                        oninput="changePlageServo(this.id);"
+                        onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+                      />
+                      <div class="b3 bm2" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm1', -10);" 
+                        onmousedown="beginChange('pwm1',  -10);" 
+                        ontouchend="stopTouch(event, 'pwm1');"
+                        onmouseup="stopChange('pwm1');" 
+                      ></div>
+                      <div class="b3 bm1" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm1', -1);" 
+                        onmousedown="beginChange('pwm1',  -1);" 
+                        ontouchend="stopTouch(event, 'pwm1');"
+                        onmouseup="stopChange('pwm1');" 
+                      ></div>
+                      <div class="b3 bp1" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm1', 1);" 
+                        onmousedown="beginChange('pwm1',  1);" 
+                        ontouchend="stopTouch(event, 'pwm1');"
+                        onmouseup="stopChange('pwm1');" 
+                      ></div>
+                      <div class="b3 bp2" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm1', 10);" 
+                        onmousedown="beginChange('pwm1',  10);" 
+                        ontouchend="stopTouch(event, 'pwm1');"
+                        onmouseup="stopChange('pwm1');" 
+                      ></div>
+                    </div>
+                    <!--<br />-->
+                    <div class="flex_90">
+                      <label for="pwm2">Extrémité 2</label>
+                      <input type="number" name="pwm2" id="pwm2" class="cServoInput"
+                        min="544" max="2400" step="1" value="2400"
+                        onfocus="this.select();"
+                        oninput="changePlageServo(this.id);"
+                        onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+                      />
+                      <div class="b3 bm2" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm2', -10);" 
+                        onmousedown="beginChange('pwm2',  -10);" 
+                        ontouchend="stopTouch(event, 'pwm2');"
+                        onmouseup="stopChange('pwm2');" 
+                      ></div>
+                      <div class="b3 bm1" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm2', -1);" 
+                        onmousedown="beginChange('pwm2',  -1);" 
+                        ontouchend="stopTouch(event, 'pwm2');"
+                        onmouseup="stopChange('pwm2');" 
+                      ></div>
+                      <div class="b3 bp1" tabindex="-1"
+                        ontouchstart="beginTouch(event, 'pwm2', 1);" 
+                        onmousedown="beginChange('pwm2',  1);" 
+                        ontouchend="stopTouch(event, 'pwm2');"
+                        onmouseup="stopChange('pwm2');" 
+                      ></div>
+                      <div class="b3 bp2" tabindex="-1" 
+                        ontouchstart="beginTouch(event, 'pwm2', 10);" 
+                        onmousedown="beginChange('pwm2',  10);" 
+                        ontouchend="stopTouch(event, 'pwm2');"
+                        onmouseup="stopChange('pwm2');" 
+                      ></div>
+                    </div>
+                  </div> <!-- cell -->
+                  <div class="rowspanned NOcell">
+                    <div class="btnSwap" tabindex="-1" onclick="swapPWM()"></div>
+                  </div> <!-- cell -->
+                </div> <!-- row -->
+              </div> <!-- table -->
+            </div> <!-- pos_relative -->
+          </p>
+          <p>
+            <div>
+              <span>Test mode : </span>
+              <input type="radio" id="sliderVal" name="slider_option" onclick="changeTestMode();" value="0" checked />
+              <label for="sliderVal">Valeur</label>
+              <input type="radio" id="sliderImp" name="slider_option" onclick="changeTestMode();" value="1" />
+              <label for="sliderImp">Impulsion</label>
+            </div>
+            <div class="ligne_slider">
+              <div class="b4 bm1" tabindex="-1" 
+                ontouchstart="beginTouch(event, 'confRange', -1);" 
+                onmousedown="beginChange('confRange', -1);" 
+                ontouchend="stopTouch(event, 'confRange');" 
+                onmouseup="stopChange('confRange');" 
+              ></div>
+              <div class="centre_ligne_slider">
+                <p><span id="rangeValue">1472</span></p>
+                <p><input id="confRange" class="slider" type="range" min="544" max="2400" value="1472" oninput="showRangeVal(this.value)" onchange="showRangeVal(this.value); XMLHttpRequest_post('/servotest')" /></p>
+              </div>
+              <div class="b4 bp1" tabindex="-1" 
+                ontouchstart="beginTouch(event, 'confRange',  1);" 
+                onmousedown="beginChange('confRange',  1);" 
+                ontouchend="stopTouch(event, 'confRange');" 
+                onmouseup="stopChange('confRange');" 
+              ></div>
+            </div> <!-- ligne_slider -->
+          </p>
+        </div>
+        <div class="boutonOKAnnuler" >
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="servoOK();"    value="Valider" />
+        </div>
+      </div> <!-- input_servo -->
+      <!-- Dialogue de saisie des positions de servo -->
+      <div id="input_position" class="inputBox noshow" onclick="event.stopPropagation();">
+        <p id="input_position_title" class="inputTitle">Position servo</p>
+        <br />
+        <div class="nomargin gauche">
+          <div class="nomargin center">
+            <div class="flex_95">
+              <div class="b2 bm2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'posAdjust', -10);" 
+                onmousedown="beginChange('posAdjust',  -10);" 
+                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
+                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
+              ></div>
+                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
+              <div class="b2 bm1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'posAdjust', -1);" 
+                onmousedown="beginChange('posAdjust',  -1);" 
+                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
+                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
+              ></div>
+                <!--value="&nbsp;&lt;&nbsp;"-->
+              <input type="number" name="posAdjust" id="posAdjust"
+                min="0" max="1800" step="0.01" value="0.00"
+                onfocus="this.select();"
+                oninput="setPosRangeVal(this.value);"
+                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
+              />
+              <div class="b2 bp1" tabindex="-1"
+                ontouchstart="beginTouch(event, 'posAdjust', 1);" 
+                onmousedown="beginChange('posAdjust',  1);" 
+                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
+                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
+              ></div>
+                <!--value="&nbsp;&gt;&nbsp;"-->
+              <div class="b2 bp2" tabindex="-1"
+                ontouchstart="beginTouch(event, 'posAdjust', 10);" 
+                onmousedown="beginChange('posAdjust',  10);" 
+                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
+                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
+              ></div>
+                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
+            </div>
+            <br />
+            <div class="tbl_slider">
+              <div class="row">
+                <div class="col_gauche">
+                  <span id="posLimit1">XXX</span>
+                </div>
+                <div class="col_centre">
+                  <input id="posRange" class="slider" type="range" min="544" max="2400" value="1472" oninput="showPosRangeVal(this.value)"
+                    onchange="showPosRangeVal(this.value); XMLHttpRequest_post('/servopos');"
+                  />
+                </div>
+                <div class="col_droite">
+                  <span id="posLimit2">XXX</span>
+                </div>
+              </div>
+              <div class="row">
+                
+              </div>
+            </div> <!-- tbl_slider -->
+            <br />
+          </div>
+        </div>
+        <div class="boutonOKAnnuler" >
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
+          <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="positionOK();"    value="Valider" />
+        </div>
+      </div> <!-- input_position -->
+      <!-- Dialogue de saisie de la configuration WiFi -->
+      <div id="input_wifi" class="inputBox noshow" onclick="event.stopPropagation();">
+        <p id="input_position_title" class="inputTitle">Configuration WiFi</p>
+        <div class="nomargin gauche">
+        <br />
+          <div class="flex_wifi">
+            <div class="flex_wifi_col1">
+              <div class="flex_wifi_label">
+                <label for="apSSID">AP SSID</label>
+              </div>
+              <br />
+              <div class="flex_wifi_label">
+                <label for="apPwd1">AP password</label><br />
+              </div>
+              <div class="flex_wifi_label">
+                <label for="apPwd2">Repeat password</label>
+              </div>
+            </div>
+            <div class="flex_wifi_col2">
+              <input type="text" name="apSSID" id="apSSID" value="" maxlength="32"
+                oninput="apConfigChange = true;"
+                onfocus="this.select();"
+              />
+              <br /><br />
+              <input type="password" name="apPwd1" id="apPwd1" value="" maxlength="63"
+                title="Enter AP password:&#010;min len=8, max len=63&#010;or leave it empty for no password."
+                oninput="apConfigChange = true;"
+                onfocus="this.select();"
+              />
+              <br />
+              <input type="password" name="apPwd2" id="apPwd2" value="" maxlength="63"
+                title="Enter same as first AP password."
+                oninput="apConfigChange = true;"
+                onfocus="this.select();"
+              />
+            </div>
+            <div class="flex_wifi_col3">
+              <div class="flex_wifi_label"></div>
+              <br />
+              <div class="flex_wifi_label">
+                <image id="btnShowPasswd" src="images/oeuil.svg" title="Show password" onclick="toogleShowPasswd('ap');" />
+              </div>
+            </div>
+          </div> <!-- flex_wifi -->
+          <div style="width: 100%">
+            <br />
+            <div class="boutonOKAnnuler" >
+              <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();"     value="Annuler" />
+              <input type="button" id="btnValideAP" class="btnOkAnnuler" tabindex="-1" onclick="updateAPconfig();" value="Valider" />
+            </div>
+          </div>
+      </div>
+    </div> <!-- dialog_mask -->
+  </body>
+</html>

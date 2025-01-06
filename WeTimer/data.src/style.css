@@ -1,0 +1,716 @@
+/****************************************************************************/
+/*                                                                          */
+/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/*                                                                          */
+/* This file: style.css is part of WeTimer / WeDT                           */
+/*                                                                          */
+/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* it under the terms of the GNU General Public License as published by     */
+/* the Free Software Foundation, either version 3 of the License, or        */
+/* (at your option) any later version.                                      */
+/*                                                                          */
+/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WITHOUT ANY WARRANTY; without even the implied warranty of               */
+/* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
+/* GNU General Public License for more details.                             */
+/*                                                                          */
+/* You should have received a copy of the GNU General Public License        */
+/* along with this program.  If not, see <http://www.gnu.org/licenses/>.    */
+/*                                                                          */
+/****************************************************************************/
+
+@font-face {
+  font-family: wtFont;
+  src: url(fonts/RoundedMplus1c-Regular.ttf);
+}
+@font-face {
+  font-family: wtFont;
+  src: url(fonts/RoundedMplus1c-Regular.ttf);
+  font-weight: normal;
+}
+@font-face {
+  font-family: wtFont;
+  src: url(fonts/RoundedMplus1c-Bold.ttf);
+  font-weight: bold;
+}
+
+:root {
+  /*font-family: Tahoma, Verdana, sans-serif;*/
+  font-family: wtFont;
+}
+textarea, input, button, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #f0ffff;
+}
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+header {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.flex_90 {
+  width: 90%;
+  display: flex;
+}
+.flex_95 {
+  width: 95%;
+  display: flex;
+  margin: auto;
+}
+.flex_100 {
+  width: 100%;
+  display: flex;
+}
+.flex_100 img {
+  width: 100%;
+}
+.head1 {
+  flex: 0;
+  padding: 7px 0 0 0;
+}
+.head2 {
+  flex: 1;
+}
+.head3 {
+  flex: 0;
+  padding: 11px 0 0 0;
+}
+#settings {
+  width: 72px;
+  cursor: pointer;
+}
+#logo {
+  width: 72px;
+  cursor: pointer;
+}
+.hr {
+  width: 100%;
+  border-top: solid 1px #555555;
+  border-bottom: solid 1px #808080;
+  margin-top: 3px;
+}
+.pagewrapper {
+  position: relative;
+}
+#la_page {
+  /*height: 100%;
+  height: 100vh;*/
+  margin: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+#pied_page {
+  /*position: fixed;
+  bottom: 0;*/
+  width: 100%;
+  /*padding-left: 20px;
+  padding-right: 20px;*/
+  text-align: center;
+  font-style: italic;
+  font-size: 4vw;
+}
+.margin_top {
+  width: 100%;
+  margin: 0;
+}
+.span_title {
+  background: rgb(0,0,62);
+  background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  background-clip: border-box;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+h1 {
+  font-size: xxx-large;
+  /*font-family: Tahoma, Verdana, sans-serif;*/
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+#pversion1 {
+  margin: 0px;
+}
+#timer_ssid {
+  font-weight: bold;
+  color: #000090;
+}
+.center {
+  text-align: center;
+}
+p.center {
+  /* haut | droit | bas | gauche */
+  margin: 7px 0 7px 0;
+}
+.description {
+  margin: 0;
+  text-align: center;
+  font-style: italic;
+  font-size: 4vw;
+}
+.gauche {
+  text-align: left;
+}
+#timer_status {
+  font-weight: bold;
+  color: #000090;
+  font-size: 140%;
+}
+#duree_vol {
+  float: right;
+  font-weight: bold;
+  color: #007F00;
+}
+#main_form input {
+  font-size: 2em;
+  margin: 0 4px 0 4px;
+  height: 48px;
+}
+#main_form input[type="button"] {
+  cursor: pointer;
+  padding: 1px 4px 1px 4px;
+}
+.vertical_space {
+  margin: 5px 0 0 0;
+}
+#tempVol {
+  width: 3.4em;
+  height: 63px;
+  margin: 0;
+  text-align: right;
+  padding-right: 10px;
+  background-color: #cdefff;
+  font-weight: bold;
+  flex: 2;
+}
+.b1 {
+  flex: 1;
+  cursor: pointer;
+  background-color: #e9e9ed;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid;
+  border-radius: 7px;
+  box-shadow: 2px 2px #979797;
+  margin: 0 4px 0 4px;
+  height: 50px;
+}
+#delaiSec {
+  width: 3.4em;
+  font-size: 1.5em;
+  text-align: right;
+  flex: 2;
+  background-color: #cdefff;
+}
+.b2{
+  flex: 1;
+  cursor: pointer;
+  background-color: #e9e9ed;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid;
+  border-radius: 7px;
+  box-shadow: 2px 2px #979797;
+  margin: 0 3px 0 3px;
+  height: 40px;
+}
+#posAdjust {
+  width: 3.4em;
+  font-size: 1.5em;
+  text-align: right;
+  flex: 2;
+  background-color: #cdefff;
+}
+.cServoInput {
+  width: 3em;
+  font-size: 1.1em;
+  text-align: right;
+  flex: 2;
+  background-color: #cdefff;
+}
+.b3{
+  flex: 1;
+  cursor: pointer;
+  background-color: #e9e9ed;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid;
+  border-radius: 7px;
+  box-shadow: 2px 2px #979797;
+  margin: 0 3px 0 3px;
+  height: 30px;
+}
+.ligne_slider {
+  width: 100%;
+  display: flex;
+  font-size: 1em;
+  cursor: pointer;
+}
+.b4 {
+  width: 40px;
+  height: 35px;
+  margin-top: 5px;
+  cursor: pointer;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid;
+  border-radius: 7px;
+  box-shadow: 2px 2px #979797;
+}
+.centre_ligne_slider {
+  flex: 1;
+}
+.centre_ligne_slider input[type="range"] {
+  width: 95%;
+  margin: 0;
+}
+.centre_ligne_slider p {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+.bm1 {
+  background-image: url("images/btnmoins.svg");
+}
+.bp1 {
+  background-image: url("images/btnplus.svg");
+}
+.bm2 {
+  background-image: url("images/btnmoinsmoins.svg");
+}
+.bp2 {
+  background-image: url("images/btnplusplus.svg");
+}
+.bmm {
+  background-image: url("images/btnmoinsm.svg");
+}
+.bpm {
+  background-image: url("images/btnplusm.svg");
+}
+
+.ligne_slider {
+  width: 100%;
+  display: flex;
+  font-size: 1em;
+  cursor: pointer;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 7px;
+}
+
+
+
+
+
+/* Remove input numbers Arrows/Spinners */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+.centreur {
+  display: table;
+  margin: 0 auto;
+  width: 75%;
+}
+.bouton {
+  display: table-cell;
+  /*font-family: sans-serif;*/
+  font-size: 1.6em;
+  color: #000;
+  text-shadow: 0px 1px 0px #ffffff80;
+  background: #3088bb;
+  background: linear-gradient(#cdefff, #3088bb);
+  width: 30%;
+  height: 3em;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 7px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5),
+                0 -1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+.bouton:hover {
+  height: 3em;
+  color: #222;
+  background: #2078ab;
+  background: linear-gradient(#d5f7ff, #4098cb);
+}
+.bouton:active {
+  color: #000;
+  background: #3088bb;
+  background: linear-gradient(#cdefff, #3088bb);
+  box-shadow: 1px 1px 10px black inset,
+                0 1px 0 rgba( 255, 255, 255, 0.4);
+}
+.btn_rdt {
+  display: table-cell;
+  /*font-family: sans-serif;*/
+  font-size: 1.6em;
+  color: #000;
+  text-shadow: 0px 1px 0px #ffffff80;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 7px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.5),
+                0 -1px 0 rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  height: 120px;
+  background: #7f0000;
+  background: linear-gradient(#d20000, #2c0000);
+  flex: 1;
+}
+.btn_rdt:hover {
+  height: 120px;
+  color: #222;
+  background: #9f0000;
+  background: linear-gradient(#f20000, #4c0000);
+}
+.btn_rdt:active {
+  color: #000;
+  height: 120px;
+  background: #7f0000;
+  background: linear-gradient(#d20000, #2c0000);
+  box-shadow: 1px 1px 10px black inset,
+                0 1px 0 rgba( 255, 255, 255, 0.4);
+}
+.btn_rdt_disabled {
+  color: gray;
+  cursor: default;
+  background: #7f7f7f;
+}
+.btn_rdt_disabled:hover, .btn_rdt_disabled:active {
+  color: gray;
+  background: #7f7f7f;
+  /*box-shadow: unset;*/
+}
+#rdt_on_off {
+  margin-left: 7px;
+  cursor: pointer;
+}
+#rdt_on_off:hover {
+  filter: brightness(0.8);
+  -webkit-filter: brightness(0.8);
+  /*-moz-filter: brightness(0.8);*/
+  -o-filter: brightness(0.8);
+  -ms-filter: brightness(0.8);
+}
+.container {
+  display: flex;
+  /*width: 100%;*/
+}
+.noshow {
+  display: none;
+}
+#page_2 p {
+      /* haut | droit | bas | gauche */
+  margin: 7px 0 0 0;
+}
+#tsetup {
+  width: 100%;
+  margin-top: 7px;
+  /*margin-left: -7px;*/
+  background-color: #dedede;
+  /*border: solid 1px;*/
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 3.8vw;
+}
+#tsetup thead {
+  font-weight: bold;
+  text-align: center;
+  height: 3em;
+}
+.tdServoHead {
+  cursor: pointer;
+  text-align: center;
+  background-image: url("images/settings.svg");
+  background-size: contain;
+  background-size: 2.6em;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: rgba(224,238,238,0.6);
+  background-blend-mode: lighten;
+}
+#tsetup td {
+  border: solid 1px;
+  /*font-size: 0.95em;*/
+}
+.tdCol1 {
+  background-color: #dedede;
+}
+#setup_table {
+  background-color: #f0ffff;
+}
+.cellDelai {
+  background: #cdefff;
+  text-align: right;
+  padding-right: 0.25em;
+  cursor: pointer;
+}
+.noInput {
+  cursor: default;
+}
+.cellServo {
+  background: #cdefff;
+  text-align: right;
+  padding-right: 0.25em;
+  cursor: pointer;
+}
+.cellValue {
+  background: #ceffce;
+  padding-right: 0.25em;
+  text-align: right;
+}
+.float_right {
+  float: right;
+}
+#dialog_mask {
+  position: fixed;
+  background-color: rgba(0,0,0,0.5);
+  left: 0%;
+  right: 0%;
+  top: 0%;
+  bottom: 0%;
+}
+.inputBox {
+  position: fixed;
+  border: 1px solid;
+  background-color: rgba(224,224,224,1);
+  box-shadow: 8px 8px 12px #3f3f3f;
+  left: 2%;
+  top: 15%;
+  width: 90%;
+  padding: 0 10px 0 10px;
+  text-align: center;
+  transition: all 0.5s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  -o-transition: all 0.5s ease-in-out;
+  -ms-transition: all 0.5s ease-in-out;
+}
+.inputTitle {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.nobold {
+  font-weight: initial;
+}
+.explications {
+  font-size: 1em;
+  text-align: left;
+  font-style: italic;
+  margin: 0px auto 5px auto;
+  width: 70%;
+}
+.disabled {
+  color: gray;
+  font-style: italic;
+  cursor: default;
+}
+.boutonOKAnnuler {
+  float: right;
+      /* haut | droit | bas | gauche */
+  margin: 0 0 15px 0;
+}
+.btnOkAnnuler {
+  font-size: medium;
+  font-weight: normal;
+}
+.tbl_slider {
+  width: 100%;
+  display: table;
+}
+.col_gauche, .col_droite {
+  width: 2em;
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+.col_centre {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+.slider {
+  width: 99%;
+}
+.slider_etroit {
+  width: 70%;
+}
+#batterie {
+  float: left;
+  width: 33px;
+  height: 48px;
+  font-size: small;
+  background-image: url("images/batterie0.svg");
+  background-size: cover;
+  text-align: center;
+}
+#batterie p {
+  text-align: center;
+  /*font-family: sans-serif;*/
+  font-weight: bold;
+  text-shadow: 0px 0px 4px white;
+  transform: translateY(2px) rotate(-90deg);
+}
+.led_container {
+  float: right;
+}
+.led {
+  float: right;
+  width: 31px;
+  height: 31px;
+  background-image: url("images/ledeteinte.svg");
+  background-size: cover;
+}
+#led0 {
+  margin-right: 7px;
+}
+#ws_state {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  font-size: 0.6em;
+}
+/* utilisé pour inverser le sens des sliders */
+.flip {
+  -ms-transform: scaleX(-1); 
+  -webkit-transform: scaleX(-1); 
+  transform: scaleX(-1);
+} 
+.pos_relative {
+  position: relative;
+}
+.table {
+  display: table;
+  /*width: 100%;*/
+}
+.row {
+  display: table-row;
+}
+.cell {
+  display: table-cell;
+}
+.rowspanned {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
+.rowspanned_left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+}
+.btnSwap {
+  cursor: pointer;
+  height: 100%;
+  width: 32px;
+  margin-left: 0.4em;
+  background-image: url("images/btnswap.svg");
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: center;
+  border: 1px solid;
+  border-radius: 7px;
+  box-shadow: 2px 2px #979797;
+}
+#btnMenu {
+  height: 26px;
+  width: 26px;
+  margin-right: 7px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.dropdown {
+  position: fixed;
+  /*min-width: 100px;
+  min-height: 150px;*/
+  background-color: #e9e9ed;
+  border-radius: 3px;
+  box-shadow: 7px 7px 5px #b4b4b4;
+}
+menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.menuItem {
+  padding: 7px;
+}
+.menuItem:hover {
+  background-color: #d0d0d7;
+}
+menu li {
+  margin: 0px;
+}
+menu li:hover {
+  /*background-color: #d0d0d7;*/
+}
+.menu_hr {
+  width: 100%;
+  border: 1px solid black
+}
+menu a:link { 
+  text-decoration: none;
+}
+menu a:visited { 
+  color: black;
+}
+#input_wifi {
+  font-size: 3.3vw;
+}#btnShowPasswd {
+  /*margin-top: 3em;*/
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+.flex_wifi {
+  display: flex;
+  flex-wrap: wrap;
+}
+.flex_wifi input {
+  width: 12em;
+  height: 1.5em;
+}
+.flex_wifi_label {
+  height: 1.875em;
+}
+.flex_wifi_col1 {
+  flex: 1;
+}
+.flex_wifi_col2 {
+  flex: 1;
+}
+.flex_wifi_col3 {
+  flex: 0;
+  padding-left: 7px;
+}
+.tbl_leds {
+  /*width: 80%;*/
+  height: 1em;
+}

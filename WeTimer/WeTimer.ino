@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2023 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
 /* This file: WeTimer.ino is part of WeTimer                                */
 /*                                                                          */
@@ -21,385 +21,412 @@
 
 #include "WeTimer.h"
 
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 // Variables globales
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 
 char cli_ssid[32] = DEFAULT_CLI_SSID;
 char cli_pwd[63]  = DEFAULT_CLI_PWD;
 char ap_ssid[32]  = DEFAULT_AP_SSID;
 char ap_pwd[63]   = DEFAULT_AP_PWD;
+char description[DESCRIPTION_LEN] = "";
+bool wifiIsSlepping = false;
 
-unsigned int  delaiArmement           = DEFAULT_TEMPS_ARMEMENT;             // Secondes
-unsigned int  tempsVol                = DEFAULT_TEMPS_VOL;                  // Secondes
-unsigned int  servoStabVol            = DEFAULT_SERVO_STAB_VOL;             // Microsecondes
-unsigned int  servoStabTreuil         = DEFAULT_SERVO_STAB_TREUIL;          // Microsecondes
-unsigned int  servoStabDT             = DEFAULT_SERVO_STAB_DT;              // Microsecondes
-unsigned int  servoDeriveVol          = DEFAULT_SERVO_DERIVE_VOL;           // Microsecondes
-unsigned int  servoDeriveTreuilTendu  = DEFAULT_SERVO_DERIVE_TREUIL_TENDU;  // Microsecondes
-unsigned int  servoDeriveTreuilVirage = DEFAULT_SERVO_DERIVE_TREUIL_VIRAGE; // Microsecondes
-unsigned int  servoDeriveZoom         = DEFAULT_SERVO_DERIVE_ZOOM;          // Microsecondes
-
-/* hostname for mDNS. Should work at least on windows. Try http://minuterie.local */
+// hostname pour mDNS : http://minuterie.local
 const char *myHostname = APP_NAME;
-
 // DNS server
-const byte DNS_PORT = 53;
 DNSServer dnsServer;
-
-// Web server
-ESP8266WebServer server(80);
-
-/* Soft AP network parameters */
+// Web server sur port 80 et WebSocket server sur port 81
+ESP8266WebServer server(HTTP_PORT);
+WebSocketsServer webSocket = WebSocketsServer(WEB_SOCKET_PORT);  
+// Telnet server
+ESPTelnet telnet;
+// Soft AP network parameters
 IPAddress apIP(10, 10, 10, 10);
 IPAddress netMsk(255, 255, 255, 0);
+// Servos
+Servo servo[NB_SERVOS];              // Variable globale pour 3 servos
+unsigned int delai[NB_DELAI];        // On stockeras en millisecondes
+int cservo[NB_SERVOS][NB_CONFIG];    // Configuration des servos
+int pservo[NB_SERVOS][NB_POSITIONS]; // positions des servos
 
-unsigned long debut;
-int crochet = 0;
-int zoom    = 0;
+int timerStatus    = STATUS_PARC;
+int timerOldStatus = timerStatus;
+struct temps temps = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+unsigned long timeArmement = 0;
+uint8_t crochet[2] = {SWITCH_OFF, SWITCH_OFF};
+volatile bool recuExternRDT = false;
+char serialInput[SERIAL_BUFF_LEN]; // Incoming Serial data
+int serialPointer = 0;             // last character counter of Serial data
+bool serialComplete = false;       // whether the string is complete
+unsigned long dureeBoucle = 0;
+unsigned long bouclePrecedente;
 
-Servo servoStab;   // Variable globale servo stabilisateur
-Servo servoDerive; // Servo pour la dérive
-
-int  timerStatus = STATUS_DT;
-bool flagZoom    = false;
-
-unsigned long blinkInterval = 1000; // 1 secondes
-unsigned long previousBlink = 0;
-int ledState = HIGH;
-
-
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 // Initialisation
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 void setup() {
 
-  #ifdef debug
-    Serial.begin(115200);
+  // Try pushing frequency to 160MHz.
+  //bool update_cpu_freq = system_update_cpu_freq(160);
+  // Set CPU frequency to 80MHz.
+  bool update_cpu_freq = system_update_cpu_freq(80);
+
+  ////Serial.begin(115200);
+  Serial.begin(38400);
+  #ifdef DEBUG
     delay(500);
     Serial.flush();
-    Serial.println("\n");
+    WT_PRINTF("\n");
+    Serial.flush();
+    int cpuFreq = system_get_cpu_freq();
+    WT_PRINTF("Starting %s on ESP8266@%dMHz (system_update_cpu_freq() = %s)...\n\n", APP_NAME_VERSION, cpuFreq, update_cpu_freq?"true":"false");
     Serial.flush();
   #endif
 
-  EEPROM.begin(EEPROM_LENGTH);
+  // Initialisation entrées / sorties
+  pinMode(PIN_LED,      OUTPUT);
+  pinMode(PIN_RDT,      INPUT_PULLUP);
+  pinMode(PIN_SWITCH_0, INPUT_PULLUP);
+  pinMode(PIN_SWITCH_1, INPUT_PULLUP);
+  pinMode(PIN_BATTERIE, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(PIN_RDT), externRDT, FALLING);
+
+  pinMode(PIN_SERVO_0, OUTPUT); digitalWrite(PIN_SERVO_0, LOW);
+  pinMode(PIN_SERVO_1, OUTPUT); digitalWrite(PIN_SERVO_1, LOW);
+  pinMode(PIN_SERVO_2, OUTPUT); digitalWrite(PIN_SERVO_2, LOW);
+
+  // Initialisation données de la minuterie par défaut
+  defaultInit();
+  // Récupération des paramètres EEPROM
+  getEepromStartupData();
   
-  // Récupération des paramètres dans la Flash ou de leur valeur par défaut
-  delaiArmement           = EEPROM_readInt(ADDR_TEMPS_ARMEMENT);             if (delaiArmement           == 0xFFFF) delaiArmement           = DEFAULT_TEMPS_ARMEMENT;
-  tempsVol                = EEPROM_readInt(ADDR_TEMPS_VOL);                  if (tempsVol                == 0xFFFF) tempsVol                = DEFAULT_TEMPS_VOL;
-  servoStabVol            = EEPROM_readInt(ADDR_SERVO_STAB_VOL);             if (servoStabVol            == 0xFFFF) servoStabVol            = DEFAULT_SERVO_STAB_VOL;
-  servoStabTreuil         = EEPROM_readInt(ADDR_SERVO_STAB_TREUIL);          if (servoStabTreuil         == 0xFFFF) servoStabTreuil         = DEFAULT_SERVO_STAB_TREUIL;
-  servoStabDT             = EEPROM_readInt(ADDR_SERVO_STAB_DT);              if (servoStabDT             == 0xFFFF) servoStabDT             = DEFAULT_SERVO_STAB_DT;
-  servoDeriveVol          = EEPROM_readInt(ADDR_SERVO_DERIVE_VOL);           if (servoDeriveVol          == 0xFFFF) servoDeriveVol          = DEFAULT_SERVO_DERIVE_VOL;
-  servoDeriveTreuilTendu  = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL_TENDU);  if (servoDeriveTreuilTendu  == 0xFFFF) servoDeriveTreuilTendu  = DEFAULT_SERVO_DERIVE_TREUIL_TENDU;
-  servoDeriveTreuilVirage = EEPROM_readInt(ADDR_SERVO_DERIVE_TREUIL_VIRAGE); if (servoDeriveTreuilVirage == 0xFFFF) servoDeriveTreuilVirage = DEFAULT_SERVO_DERIVE_TREUIL_VIRAGE;
-  servoDeriveZoom         = EEPROM_readInt(ADDR_SERVO_DERIVE_ZOOM);          if (servoDeriveZoom         == 0xFFFF) servoDeriveZoom         = DEFAULT_SERVO_DERIVE_ZOOM;
-  
-  char charTmp = char(EEPROM.read(ADDR_CLI_SSID));
-  if (charTmp != 0xFF) {
-    cli_ssid[0] = charTmp;
-    for (int i=1; i<32; i++) {
-      cli_ssid[i] = char(EEPROM.read(ADDR_CLI_SSID + i));
-    }
-  }
-  charTmp = char(EEPROM.read(ADDR_CLI_PWD));
-  if (charTmp != 0xFF) {
-    cli_pwd[0] = charTmp;
-    for (int i=1; i<32; i++) {
-      cli_pwd[i] = char(EEPROM.read(ADDR_CLI_PWD + i));
-    }
-  }
-  charTmp = char(EEPROM.read(ADDR_AP_SSID));
-  if (charTmp != 0xFF) {
-    ap_ssid[0] = charTmp;
-    for (int i=1; i<32; i++) {
-      ap_ssid[i] = char(EEPROM.read(ADDR_AP_SSID + i));
-    }
-  } else {
-    String SSID_MAC = String(DEFAULT_AP_SSID + WiFi.softAPmacAddress().substring(9));
-    SSID_MAC.toCharArray(ap_ssid, 32);
-  }
-  charTmp = char(EEPROM.read(ADDR_AP_PWD));
-  if (charTmp != 0xFF) {
-    ap_pwd[0] = charTmp;
-    for (int i=1; i<32; i++) {
-      ap_pwd[i] = char(EEPROM.read(ADDR_AP_PWD + i));
-    }
-  }
+  // Connection cliente acces point si SSID défini
+  wifiClientInit();
 
-  #ifdef debug
-    Serial.print("delaiArmement.......... = "); Serial.println(delaiArmement);
-    Serial.print("tempsVol............... = "); Serial.println(tempsVol);
-    Serial.print("servoStabVol........... = "); Serial.println(servoStabVol);
-    Serial.print("servoStabTreuil........ = "); Serial.println(servoStabTreuil);
-    Serial.print("servoStabDT............ = "); Serial.println(servoStabDT);
-    Serial.print("servoDeriveVol......... = "); Serial.println(servoDeriveVol);
-    Serial.print("servoDeriveTreuilTendu. = "); Serial.println(servoDeriveTreuilTendu);
-    Serial.print("servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
-    Serial.print("servoDeriveZoom........ = "); Serial.println(servoDeriveZoom);
-    Serial.print("cli_ssid............... = "); Serial.println(cli_ssid);
-    Serial.print("cli_pwd................ = "); Serial.println(cli_pwd);
-    Serial.print("ap_ssid................ = "); Serial.println(ap_ssid);
-    Serial.print("ap_pwd................. = "); Serial.println(ap_pwd);
+  // Initialisation point d'accès minuterie
+  wifiApInit();
+
+  // Setup web server
+  webServerInit();
+
+  // Serveur webSocket
+  webSocketInit();
+  // Serveur Telnet;
+  telnetInit();
+  // Initialisation des servos
+  setServoPos(0, POSITION_PARC);
+  servo[0].attach(PIN_SERVO_0, cservo[0][2], cservo[0][3]);
+  #ifdef DEBUG
+    WT_PRINTF("setup() : Position initiale Servo[0] en position parc (%d)\n", pservo[0][0]);
   #endif
 
-  servoStab.attach(PIN_SERVO_STAB);
-  servoStab.writeMicroseconds(servoStabDT);
-  servoDerive.attach(PIN_SERVO_DERIVE);
-  servoDerive.writeMicroseconds(servoDeriveVol);
-  #ifdef debug
-    Serial.print("setup() : Position initiale Servo stab en position DT ("); Serial.print(servoStabDT); Serial.println(")");
-    Serial.print("setup() : Position initiale Servo derive en position vol ("); Serial.print(servoDeriveVol); Serial.println(")");
+  setServoPos(1, POSITION_PARC);
+  servo[1].attach(PIN_SERVO_1, cservo[1][2], cservo[1][3]);
+  #ifdef DEBUG
+    WT_PRINTF("setup() : Position initiale Servo[1] en position parc (%d)\n", pservo[1][0]);
   #endif
-
-  pinMode(PIN_SWITCH, INPUT_PULLUP);
-  pinMode(GND_SWITCH, OUTPUT);
-  digitalWrite(GND_SWITCH, LOW);
-
-  pinMode(PIN_ZOOM, INPUT_PULLUP);
-  pinMode(GND_ZOOM, OUTPUT);
-  digitalWrite(GND_ZOOM, LOW);
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, ledState);
-
-  // Connection Acces Point si SSID défini
-  if (cli_ssid[0] != '\0') {
-    #ifdef debug
-      Serial.print("Connexion à "); Serial.print(cli_ssid);
-      Serial.flush();
-    #endif
-    debut = millis();
-    WiFi.begin(cli_ssid, cli_pwd);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(250);
-      #ifdef debug
-        Serial.print(".");
-        Serial.flush();
-      #endif
-      if (millis() - debut > 10000) {
-        break; // Timeout = 10 secondes
-      }
-    }
-    #ifdef debug
-      if(WiFi.status() == WL_CONNECTED) {
-        Serial.println("OK");
-        Serial.print("IP = ");
-        Serial.println(WiFi.localIP());
-      } else {
-        Serial.println("FAIL");
-      } 
-      Serial.print("\nConfiguring access point, SSID = ");
-      Serial.print(ap_ssid);
-      Serial.println("...");
-      Serial.flush();
-    #endif
-  }
-
-  /* AP ouverte si pas de mot de passe. */
-  WiFi.softAPConfig(apIP, apIP, netMsk);
-  if (ap_pwd[0] == '\0') {
-    WiFi.softAP(ap_ssid); 
-  } else {
-    WiFi.softAP(ap_ssid, ap_pwd);
-  }
-  delay(500); // Without delay I've seen the IP address blank
-  #ifdef debug
-    Serial.print("AP IP address: ");
-    Serial.println(WiFi.softAPIP());
-    Serial.flush();
+  setServoPos(2, POSITION_PARC);
+  servo[2].attach(PIN_SERVO_2, cservo[2][2], cservo[2][3]);
+  #ifdef DEBUG
+    WT_PRINTF("setup() : Position initiale Servo[2] en position parc (%d)\n", pservo[2][0]);
   #endif
-
-  /* Setup the DNS server redirecting all the domains to the apIP */
-  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  dnsServer.start(DNS_PORT, "*", apIP);
-
-  /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server.on("/", handleRoot);
-  server.on("/style.css", handleStyle);
-  server.on("/script.js", handleScript);
-  server.on("/config", handleConfig);
-  server.on("/setparams", handleSetParams);
-  server.on("/wifi", handleWiFi);
-  server.on("/rdt", handleRDT);
-  server.on("/setservo", handleSetservo);
-  server.on("/factory", handleFactory);
-  server.onNotFound(handleNotFound);
-  server.begin(); // Web server start
-  #ifdef debug
-    Serial.println("HTTP server started");
-    Serial.println("\ntimerStatus = STATUS_DT");
-    Serial.flush();
-  #endif
-
-  ledState = LOW;
-  digitalWrite(LED_BUILTIN, ledState);
 
 }
 
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 // Main loop
-//--------------------------------------------------------------------
+//----------------------------------------------------------------------
 void loop() {
 
+  uint8_t new_crochet[2];
+
+  // Mesure de la durée de la boucle
+  dureeBoucle = millis() - bouclePrecedente;
+  bouclePrecedente = millis();
+
+  //--------------------------------------------------------------------
+  // Actions de la minuterie
+  //--------------------------------------------------------------------
+    if (recuExternRDT) {
+      #ifdef DEBUG
+        WT_PRINTF("RDT externe reçu !\n");
+      #endif
+      runDT();
+    }
+
+  // Verification du délai d'armement de la minuterie
+  //--------------------------------------------------------------------
+  if (timeArmement != 0) {
+    unsigned long duree = millis() - timeArmement;
+    if ((timerStatus == STATUS_ARMEMENT) && (crochet[0] == SWITCH_ON) && (duree > (delai[0] * 10))) {
+      timerStatus = STATUS_TREUIL_MONTEE;
+      webSocketSend("STATUS", getStatusText(timerStatus));
+      #ifdef DEBUG
+        WT_PRINTF("Passage au STATUS_TREUIL_MONTEE\n");
+        WT_PRINTF("timeArmement = %d, millis() = %d, delai[0] * 10 = %d\n", timeArmement, millis(), delai[0] * 10);
+        Serial.flush();
+      #endif
+    }
+  }
+
+  // Lecture switch crochet avant
+  //--------------------------------------------------------------------
+  new_crochet[0] = digitalRead(PIN_SWITCH_0);
+  if (new_crochet[0] != crochet[0]) {
+    // Mouvement du crochet avant
+    crochet[0] = new_crochet[0];
+    webSocketSend("SWITCH_0", String(crochet[0]));
+
+    if (crochet[0] == SWITCH_ON) {
+      // Crochet en position avant : câble tendu.
+      // On positionne les servos en mode treuillage montée
+      for (int i=0; i<NB_SERVOS; i++) {
+        setServoPos(i, POSITION_TREUIL_MONTEE);
+      }
+      if ((timerStatus == STATUS_PARC) || (timerStatus == STATUS_DT)) {
+        // On était en PARC ou DT, on lance le compte de temps
+        // d'armement de la minuterie.
+        timeArmement = millis();
+        // Mémorise l'ancien status (PARC ou DT) pour y revenir en cas
+        // de non armement.
+        timerOldStatus = timerStatus;
+        // Passe en status armement en cours
+        timerStatus = STATUS_ARMEMENT;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_ARMEMENT\n");
+          WT_PRINTF("Init. timeArmement = %d\n", timeArmement);
+          Serial.flush();
+        #endif
+      } else if (timerStatus == STATUS_TREUIL_VIRAGE) {
+        timerStatus = STATUS_TREUIL_MONTEE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_TREUIL_MONTEE\n");
+          Serial.flush();
+        #endif
+      }
+
+    } else { // crochet[0] == SWITCH_OFF
+      // Crochet en position arrière : câble détendu,
+      if (timerStatus == STATUS_DEVERROUILLE) {
+        //--------------------------------------------------------------
+        //                   Moment du largage !
+        //--------------------------------------------------------------
+        // Pas de mouvement de servo maintenant. Le premier mouvement
+        // sera le PITCHUP après le delai[1]
+        temps.largage = millis();
+        calculInstants(); // Calcul des phases temporelles
+        // Allume la LED en mode vol
+        setFlasher(FLASH_VOL);
+        timerStatus = STATUS_LARGUE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_LARGUE\n");
+          Serial.flush();
+        #endif
+      }  else if (timerStatus == STATUS_TREUIL_MONTEE) {
+        // On positionne les servos en mode treuillage virage
+        for (int i=0; i<NB_SERVOS; i++) {
+          setServoPos(i, POSITION_TREUIL_VIRAGE);
+        }
+        // Et on met à jour le status
+        timerStatus = STATUS_TREUIL_VIRAGE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_TREUIL_VIRAGE\n");
+          Serial.flush();
+        #endif
+      } else if (timerStatus == STATUS_ARMEMENT) {
+        // délai trop court pour l'armement, on reinitialise et on
+        // revient à l'ancien status.
+        timeArmement = 0;
+        timerStatus = timerOldStatus;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Armement abandonné, retour status précédent\n");
+          Serial.flush();
+        #endif
+      }
+    }
+  } // (new_crochet[0] != crochet[0])
+  
+  // Lecture switch crochet verouillage
+  //--------------------------------------------------------------------
+  new_crochet[1] = digitalRead(PIN_SWITCH_1);
+  if (new_crochet[1] != crochet[1]) {
+    crochet[1] = new_crochet[1];
+    webSocketSend("SWITCH_1", String(new_crochet[1]));
+
+    if (crochet[1] == SWITCH_ON) {
+      if ((timerStatus > STATUS_ARMEMENT) && (crochet[0] == SWITCH_ON)) {
+        // Switch largage activé => Déverouillage
+        // On positionne les servos en mode dÉVERROUILLÉ
+        for (int i=0; i<NB_SERVOS; i++) {
+          setServoPos(i, POSITION_DEVERROUILLE);
+        }
+        // Allume la LED en mode déverrouillage
+        setFlasher(FLASH_DEVERROUILLAGE);
+        timerStatus = STATUS_DEVERROUILLE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_DEVERROUILLE\n");
+          Serial.flush();
+        #endif
+      }
+    } else { // crochet[1] == SWITCH_OFF
+      ; // A priori, rien a faire pour l'instant...
+      // TODO C'est probablement ici qu'on traitera la refermeture
+      // d'un crochet piloté par servo
+    }
+  } // (new_crochet[1] != crochet[1])
+
+  //--------------------------------------------------------------------
+  //                 Séquence de vol après largage
+  //--------------------------------------------------------------------
+
+  if (timerStatus >= STATUS_LARGUE) {
+    switch (timerStatus) {
+      case STATUS_LARGUE:
+        if (millis() >= temps.pitchup ) {
+          // Déclenchement PITCHUP
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_PITCHUP);
+          }
+          timerStatus = STATUS_PITCHUP;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_PITCHUP\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_PITCHUP:
+        if (millis() >= temps.montee1 ) {
+          // Déclenchement MONTEE_1
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_MONTEE_1);
+          }
+          timerStatus = STATUS_MONTEE_1;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_MONTEE_1\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_MONTEE_1:
+        if (millis() >= temps.montee2 ) {
+          // Déclenchement MONTEE_2
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_MONTEE_2);
+          }
+          timerStatus = STATUS_MONTEE_2;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_MONTEE_2\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_MONTEE_2:
+        if (millis() >= temps.bunt ) {
+          // Déclenchement BUNT
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_BUNT);
+          }
+          timerStatus = STATUS_BUNT;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_BUNT\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_BUNT:
+        if (millis() >= temps.plane1 ) {
+          // Déclenchement PLANE_1
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_PLANE_1);
+          }
+          timerStatus = STATUS_PLANE_1;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_PLANE_1\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_PLANE_1:
+        if (millis() >= temps.plane2 ) {
+          // Déclenchement PLANE_2
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_PLANE_2);
+          }
+          timerStatus = STATUS_PLANE_2;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          #ifdef DEBUG
+            WT_PRINTF("Passage au STATUS_PLANE_2\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_PLANE_2:
+        if (millis() >= temps.dt) {
+          // Déclenchement DT
+          runDT();
+        }
+        break;
+      case STATUS_DT:
+        if (millis() >= temps.parc ) {
+          // Retour au status parc
+          for (int i=0; i<NB_SERVOS; i++) {
+            setServoPos(i, POSITION_PARC);
+          }
+          timerStatus = STATUS_PARC;
+          webSocketSend("STATUS", getStatusText(timerStatus));
+          temps = (struct temps){ 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+          // Eteint la LED
+          setFlasher(FLASH_OFF);
+          #ifdef DEBUG
+            WT_PRINTF("Retour au STATUS_PARC\n");
+            Serial.flush();
+          #endif
+        }
+        break;
+      case STATUS_PARC:
+        break;
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // Services Process
+  //--------------------------------------------------------------------
+  // Flasher
+  flasherLoop();
+  // mDNS
+  if (WiFi.status() == WL_CONNECTED) {
+    MDNS.update();
+  }
   //DNS
   dnsServer.processNextRequest();
   //HTTP
   server.handleClient();
-  
-  // Actions de la minuterie
-  int new_crochet = digitalRead(PIN_SWITCH);
-  int new_zoom    = digitalRead(PIN_ZOOM);
-  
-  if (new_crochet != crochet) {
-    // Détecte les changement d'état du switch du crochet
-    if (new_crochet == CROCHET_TENDU) {
-      // On vient d'enfoncer la pédale du crochet
-      // On positionne les 2 servos en mode treuillage
-      servoStab.writeMicroseconds(servoStabTreuil);
-      servoDerive.writeMicroseconds(servoDeriveTreuilTendu);
-      #ifdef debug
-        Serial.print("Tension du crochet : Stab en position treuil,   servoStabTreuil   = ");      Serial.println(servoStabTreuil);
-        Serial.print("Tension du crochet : Dérive en position treuil, servoDeriveTreuilTendu = "); Serial.println(servoDeriveTreuilTendu);
-      #endif
-      if (timerStatus == STATUS_DT) {
-        // On était en DT, on arme la minuterie
-        timerStatus = STATUS_ARMEE;
-        debut = millis();
-        blinkInterval = 1000; // 1 secondes
-        flagZoom = false;     // Réinitialise le flag du Zoom
-        #ifdef debug
-          ////Serial.println("Servo en position départ.");
-          Serial.println("timerStatus = STATUS_ARMEE");
-          Serial.print("debut = "); Serial.println(debut);
-          Serial.flush();
-        #endif
-      } else if (timerStatus == STATUS_ARMEE) {
-        debut = millis();
-        #ifdef debug
-          Serial.print("Armement, debut = "); Serial.println(debut);
-          Serial.flush();
-        #endif
-      } else if (timerStatus == STATUS_VOL) {
-        // Annulation du vol => reset en position Treuil
-        timerStatus = STATUS_TREUIL;
-        blinkInterval = 125; // 1/8 secondes
-        #ifdef debug
-          Serial.println("timerStatus = STATUS_TREUIL");
-          Serial.flush();
-        #endif
-      }
-    } else { // new_crochet == CROCHET_RELACHE
-      // Le cable vient de se relacher,
-      if (timerStatus != STATUS_DT) {
-        // On positionne le servos stab en mode plané si on est pas déthermalisé
-        servoStab.writeMicroseconds(servoStabVol);
-        #ifdef debug
-          Serial.print("Relâchement du crochet : Stab en position vol,             servoStabVol            = "); Serial.println(servoStabVol);
-        #endif
-        if (flagZoom) {
-          // Le zoom à été activé, donc c'est sensé être largué. => Dérive en position virage vol.
-          servoDerive.writeMicroseconds(servoDeriveVol);
-          #ifdef debug
-            Serial.print("Relâchement du crochet : Dérive en position vol,           servoDeriveVol          = "); Serial.println(servoDeriveVol);
-          #endif
-        } else {
-          // Le zoom n'a pas encore été activé, on est sensé être encore vérouillé. => Dérive en position virage treuil.
-          servoDerive.writeMicroseconds(servoDeriveTreuilVirage);
-          #ifdef debug
-            Serial.print("Relâchement du crochet : Dérive en position virage treuil, servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
-          #endif
-        }
-      }
-      if (timerStatus == STATUS_TREUIL) {
-        // Début du vol (ou virage treuil)
-        timerStatus = STATUS_VOL;
-        debut = millis();
-        blinkInterval = 500; // 1/2 secondes
-        #ifdef debug
-          Serial.println("timerStatus = STATUS_VOL");
-          Serial.print("Vol, debut = "); Serial.println(debut);
-          Serial.flush();
-        #endif
-      }
-    }
-    #ifdef debug
-      Serial.print("crochet=");
-      Serial.println(crochet);
-      Serial.flush();
-    #endif
-    crochet = new_crochet;
-  } // if (new_crochet != crochet)
+  // WebSocket
+  webSocket.loop();
+  // Telnet
+  telnet.loop();
 
-  if (new_zoom != zoom) {
-    // Détecte les changement d'état du switch du zoom
-    if ((new_zoom == ZOOM_ON) && (crochet == CROCHET_TENDU)) {
-      // Servo dérive en position zoom
-      servoDerive.writeMicroseconds(servoDeriveZoom);
-      flagZoom = true; // Utilisé pour passer du virage treuil au virage plané.
-      #ifdef debug
-        Serial.print("Activation zoom : Dérive en position zoom, servoDeriveZoom = "); Serial.println(servoDeriveZoom);
-      #endif
-    } else if ((new_zoom == ZOOM_OFF) && (crochet == CROCHET_TENDU)) {
-      // Servo dérive en position treuil tendu
-      servoDerive.writeMicroseconds(servoDeriveTreuilTendu);
-      #ifdef debug
-        Serial.print("Désactivation zoom : Dérive en position treuil, servoDeriveTreuilTendu = "); Serial.println(servoDeriveTreuilTendu);
-      #endif
-    } else {
-      if (flagZoom) {
-        // Le zoom à été activé, donc c'est sensé être largué. => Dérive en position virage vol.
-        servoDerive.writeMicroseconds(servoDeriveVol);
-        #ifdef debug
-          Serial.print("Crochet détendu, zoom inactif : Dérive en position vol, servoDeriveVol = "); Serial.println(servoDeriveVol);
-        #endif
-      } else {
-        // Le zoom n'a pas encore été activé, on est sensé être encore vérouillé. => Dérive en position virage treuil.
-        servoDerive.writeMicroseconds(servoDeriveTreuilVirage);
-        #ifdef debug
-          Serial.print("Crochet détendu, zoom inactif : Dérive en position virage treuil, servoDeriveTreuilVirage = "); Serial.println(servoDeriveTreuilVirage);
-        #endif
-      }
-    }
-    zoom = new_zoom;
-  } // if (new_zoom != zoom)
+  // On laisse du temps au système WiFi...
+  delay(1);
+  yield();
 
-  // Si le crochet est tendu depuis plus de "delaiArmement" et le status "STATUS_ARMEE", on passe en status STATUS_TREUIL
-  if ((timerStatus == STATUS_ARMEE) and (crochet == CROCHET_TENDU) and ((millis() - debut) > delaiArmement * 1000)) {
-    timerStatus = STATUS_TREUIL;
-    blinkInterval = 125; // 1/8 secondes
-    #ifdef debug
-      Serial.println("timerStatus = STATUS_TREUIL");
-      Serial.flush();
-    #endif
-  }
-
-  // Si le crochet est relâché depuis plus de "tempsVol" et le status "STATUS_VOL", on déthermalise
-  if ((timerStatus == STATUS_VOL) and (crochet == CROCHET_RELACHE) and ((millis() - debut) > tempsVol * 1000)) {
-    servoStab.writeMicroseconds(servoStabDT);
-    timerStatus = STATUS_DT;
-    #ifdef debug
-      Serial.print("Déthermalise : Stab en position DT,   servoStabVol = "); Serial.println(servoStabDT);
-      Serial.println("timerStatus = STATUS_DT");
-      Serial.flush();
-    #endif
-  }
-  
-  // Clignottement de la LED sauf STATUS_DT
-  if (timerStatus != STATUS_DT) {
-    unsigned long T = millis();
-    if (T - previousBlink >= blinkInterval) {
-      previousBlink = T;
-      if (ledState == LOW) {
-        ledState = HIGH;
-      } else {
-        ledState = LOW;
-      }
-      digitalWrite(LED_BUILTIN, ledState);
-    }
-  } else {
-    ledState = HIGH;
-    digitalWrite(LED_BUILTIN, ledState);
-  }
+  //--------------------------------------------------------------------
+  // TODO: Transférer les entrées du port série
+  // vers un module interpréteur de commandes
+  processSerial();
 
 }
+
