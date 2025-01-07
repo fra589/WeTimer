@@ -202,7 +202,12 @@
   extern uint8_t crochet[2];
   extern volatile bool recuExternRDT;
   extern unsigned long dureeBoucle;
-  
+  // Flasher
+  extern unsigned long tOn;
+  extern unsigned long tOff;
+  extern unsigned long tCycle;
+  extern unsigned long nFlash;
+
   //----------------------------------------------------------------------------------------------------
   // Fonctions de WeTimer.cpp
   //----------------------------------------------------------------------------------------------------

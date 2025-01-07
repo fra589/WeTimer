@@ -714,3 +714,26 @@ menu a:visited {
   /*width: 80%;*/
   height: 1em;
 }
+.flex_flash {
+  display: flex;
+  flex-wrap: wrap;
+}
+.flex_flash_1 {
+  flex: 1;
+}
+.flex_flash_0 {
+  flex: 0;
+  padding-left: 7px;
+}
+.mr7 {
+  margin-right: 7px;
+}
+.val_flash {
+  width: 3em;
+  text-align: right;
+}
+.flash_on_off {
+  width: 42px;
+  height: 24px;
+  cursor: pointer;
+}

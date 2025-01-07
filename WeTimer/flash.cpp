@@ -22,10 +22,11 @@
 #include "WeTimer.h"
 
 flashMode flashEnCours   = FLASH_OFF;
-unsigned long tOn        = ON_TIME;  //  300 ms
-unsigned long tOff       = OFF_TIME; //  200 ms
-unsigned long tCycle     = T_CYCLE;  // 2000 ms
-unsigned long nFlash     = N_FLASH;  //    3
+unsigned long tOn        = ON_TIME;
+unsigned long tOff       = OFF_TIME;
+unsigned long tCycle     = T_CYCLE;
+unsigned long nFlash     = N_FLASH;
+unsigned long _tCycle    = tCycle;
 unsigned long nCycle     = 0;
 unsigned long debutCycle = 0;
 
@@ -45,14 +46,14 @@ void setFlasher(flashMode mode) {
       break;
     case FLASH_DEVERROUILLAGE:
       if (flashEnCours != FLASH_DEVERROUILLAGE) {
-        tCycle = (N_FLASH + 1) * (ON_TIME + OFF_TIME);
+        _tCycle = (N_FLASH + 1) * (ON_TIME + OFF_TIME);
         nCycle = 0;
         debutCycle   = millis();
       }
       break;
     case FLASH_VOL:
       if (flashEnCours != FLASH_VOL) {
-        tCycle = T_CYCLE;
+        _tCycle = tCycle;
         nCycle = 0;
         debutCycle   = millis();
       }
@@ -67,7 +68,7 @@ void flasherLoop(void) {
   // Entre debutCycle + tOn + tOff et debutCycle + tOn + tOff + tOn, la led doit être allumée
   // Entre debutCycle + tOn + tOff + tOn et debutCycle + tOn + tOff + tOn + tOff, la led doit être éteinte
   // => jusqu'à N_FLASH
-  // Ensuite, on reste éteint jusqu'à tCycle
+  // Ensuite, on reste éteint jusqu'à _tCycle
   if ((flashEnCours == FLASH_DEVERROUILLAGE) || (flashEnCours == FLASH_VOL)) {
     unsigned long now    = millis();
     unsigned long tFlash = now - debutCycle;
@@ -88,7 +89,7 @@ void flasherLoop(void) {
           nCycle++;
       }
     } else {
-      if (tFlash >= tCycle) {
+      if (tFlash >= _tCycle) {
         // On lance un nouveau cycle
         debutCycle = millis();
         nCycle = 0;

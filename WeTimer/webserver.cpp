@@ -64,6 +64,7 @@ void webServerInit(void) {
   server.on("/uploadconfig",     handleUpload);
   server.on("/setapconfig",      handleSetApConfig);
   server.on("/setdescription",   handleSetDescription);
+  server.on("/testflasher",      handleTestFlasher);
   
   server.onNotFound(handleNotFound);
 
@@ -1242,4 +1243,87 @@ void handleSetDescription(void) {
   server.send(200,"text/xml",XML);
 
 }
+void handleTestFlasher(void) {
 
+  String XML;
+  unsigned long tmpVal = 0;
+  
+  #ifdef DEBUG_WEB
+    WT_PRINTF("Entrée dans handleTestFlasher() --- %d\n", millis()/1000);
+  #endif
+
+  if (!server.hasArg("mode")){
+    #ifdef DEBUG_WEB
+      WT_PRINTF("handleTestFlasher() : Flash mode absent !\n");
+    #endif
+    XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+    XML += F("<testflasher>\n");
+    XML += F("  <result>testflasher: missing parameters mode!</result>\n");
+    XML += F("</testflasher>\n");
+    server.send(200,"text/xml",XML);
+    return;
+  }
+
+  if (server.hasArg("cycle")){
+    tmpVal = strtoul(server.arg("cycle").c_str(), NULL, 10);
+    if (tmpVal > 0) {;
+      tCycle = tmpVal * 1000;
+      #ifdef DEBUG_WEB
+        WT_PRINTF("handleTestFlasher() : tCycle = %d (%s)\n", tCycle, server.arg("cycle").c_str());
+      #endif
+    }
+  }
+
+  if (server.hasArg("allume")){
+    tmpVal = strtoul(server.arg("allume").c_str(), NULL, 10);
+    if (tmpVal > 0) {;
+      tOn = tmpVal;
+      #ifdef DEBUG_WEB
+        WT_PRINTF("handleTestFlasher() : tOn    = %d (%s)\n", tOn, server.arg("allume").c_str());
+      #endif
+    }
+  }
+
+  if (server.hasArg("eteind")){
+    tmpVal = strtoul(server.arg("eteind").c_str(), NULL, 10);
+    if (tmpVal > 0) {;
+      tOff = tmpVal;
+      #ifdef DEBUG_WEB
+        WT_PRINTF("handleTestFlasher() : tOff   = %d (%s)\n", tOff, server.arg("eteind").c_str());
+      #endif
+    }
+  }
+
+  if (server.hasArg("nombre")){
+    tmpVal = strtoul(server.arg("nombre").c_str(), NULL, 10);
+    if (tmpVal > 0) {;
+      nFlash = tmpVal;
+      #ifdef DEBUG_WEB
+        WT_PRINTF("handleTestFlasher() : nFlash = %d (%s)\n", nFlash, server.arg("nombre").c_str());
+      #endif
+    }
+  }
+
+  if (server.arg("mode") == "0") {
+    setFlasher(FLASH_OFF);
+  } else if (server.arg("mode") == "1") {
+    setFlasher(FLASH_POWER);
+  } else if (server.arg("mode") == "2") {
+    setFlasher(FLASH_DEVERROUILLAGE);
+  } else if (server.arg("mode") == "3") {
+    setFlasher(FLASH_VOL);
+  } else {
+    #ifdef DEBUG_WEB
+      WT_PRINTF("handleTestFlasher() : Flash mode invalide (%s)\n", server.arg("mode").c_str());
+    #endif
+  }
+
+  // Réponse au client
+  XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+  XML += F("<setapconfig>\n");
+  XML += F("  <result>OK</result>\n");
+  XML += F("</setapconfig>\n");
+  // Renvoi la réponse au client http
+  server.send(200,"text/xml",XML);
+
+}

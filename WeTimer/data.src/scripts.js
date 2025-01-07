@@ -20,11 +20,9 @@
 /****************************************************************************/
 
 // pour debug du developpement, adresse IP de la Wemos connectée au wifi :
-//var netDevURL = 'http://10.10.10.10'; // connected to WeTimer
-//var netDevURL = 'http://192.168.8.32';  // Coh@bit
-//var netDevURL = 'http://192.168.1.145'; // BlancheNeige
 //var netIP     = '192.168.1.189'; // DomoPassaduy proto 1
 //var netIP     = '192.168.1.137'; // DomoPassaduy proto 
+//var netIP     = '10.10.10.10';
 var netIP     = 'wetimer.local';
 var netDevURL = 'http://' + netIP;
 
@@ -269,6 +267,27 @@ async function XMLHttpRequest_post(requette) {
     xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhttp.send(toSend);
 
+  } else if (requette == "/testflasher") {
+    //------------------------------------------------------------------
+    var test_vol    = document.getElementById("btn_test_vol").classList.contains("on");
+    var test_verrou = document.getElementById("btn_test_verrou").classList.contains("on");
+    if (test_verrou) {
+      toSend = "mode=2";
+    } else if (test_vol) {
+      toSend = "mode=3";
+    } else {
+      toSend = "mode=0";
+    }
+    if ((test_verrou) || (test_vol)) {
+      toSend += "&cycle=" + document.getElementById("cycleFlash").value;
+      toSend += "&allume=" + document.getElementById("allumeFlash").value;
+      toSend += "&eteind=" + document.getElementById("eteintFlash").value;
+      toSend += "&nombre=" + document.getElementById("nbFlash").value;
+    }
+    // Poste la requette
+    xhttp.open("POST", postURI, true);
+    xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhttp.send(toSend);
   }
 
 }
@@ -698,7 +717,7 @@ function positionOK() {
   var pNum   = Number(document.getElementById("pNum").innerText);
   pServo[sNum][pNum] = nouvelleValeur;
   // Envoi des tableau de données à la minuterie
-  XMLHttpRequest_post('/setconfig');
+  XMLHttpRequest_post("/setconfig");
   // Fermeture de la boite de dialogue
   dialogHide();  
 }
@@ -806,16 +825,17 @@ function delaiOK() {
   // Mise à jour du tableau de données
   tblDelai[delaiEnCours] = Number(nouvelleValeur) * 100;
   // Envoi des tableau de données à la minuterie
-  XMLHttpRequest_post('/setconfig');
+  XMLHttpRequest_post("/setconfig");
   // Fermeture de la boite de dialogue
   dialogHide();
 }
 function dialogHide() {
-  document.getElementById("dialog_mask").classList.add("noshow");
   document.getElementById("input_delai").classList.add("noshow");
   document.getElementById("input_servo").classList.add("noshow");
   document.getElementById("input_position").classList.add("noshow");
   document.getElementById("input_wifi").classList.add("noshow");
+  document.getElementById("input_flasher").classList.add("noshow");
+  document.getElementById("dialog_mask").classList.add("noshow");
 }
 function swapPWM() {
   var pwm1   = document.getElementById("pwm1");
@@ -1001,7 +1021,7 @@ function servoOK() {
     cellule.innerText = pServo[sNum][i];
   }
   // Envoi la mise à jour à la minuterie
-  XMLHttpRequest_post('/setservoconfig');
+  XMLHttpRequest_post("/setservoconfig");
   // Masque la boite de dialogue
   dialogHide();
 
@@ -1255,10 +1275,177 @@ function sendRDT() {
     XMLHttpRequest_get('/rdt');
   }
 }
-
 function doNothing() {
   return;
 }
+function ConfigFlasher() {
+  // Récupère les données du flasher
+  alert("Récupération des données à faire.");
+  // Affichage de la boite de dialogue
+  document.getElementById("input_flasher").classList.remove("noshow");
+  document.getElementById("dialog_mask").classList.remove("noshow");
+}
+function toogleFlashVol() {
+  var btn_on_off = document.getElementById("btn_flash_vol");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    document.getElementById("flash_status_vol").innerText = "Flash vol inactif";
+  } else {
+    // Passage de off a on
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    document.getElementById("flash_status_vol").innerText = "Flash vol actif";
+  }
+}
+function toogleFlashVerrou() {
+  var btn_on_off = document.getElementById("btn_flash_verrou");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    document.getElementById("flash_status_verrou").innerText = "Flash déverrouillage inactif";
+  } else {
+    // Passage de off a on
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    document.getElementById("flash_status_verrou").innerText = "Flash déverrouillage actif";
+  }
+}
+function updateFlasher() {
+  alert("Développement en cours");
+  // Masque la boite de dialogue
+  dialogHide();
+}
+function flashDefault() {
+  // Le flash vol est actif
+  var btn_on_off = document.getElementById("btn_flash_vol");
+  btn_on_off.classList.remove("off");
+  btn_on_off.classList.add("on");
+  btn_on_off.src = "images/btnon.svg";
+  document.getElementById("flash_status_vol").innerText = "Flash vol actif";
+  // Le flash dévérouillage est actif
+  btn_on_off = document.getElementById("btn_flash_verrou");
+  btn_on_off.classList.remove("off");
+  btn_on_off.classList.add("on");
+  btn_on_off.src = "images/btnon.svg";
+  document.getElementById("flash_status_verrou").innerText = "Flash déverrouillage actif";
+  // Valeurs des inputs
+  document.getElementById("cycleFlash").value  =  2;
+  document.getElementById('val_cycle_flash').innerHTML = "2&nbsp;s";
+  document.getElementById("allumeFlash").value = 35;
+  document.getElementById('val_allume_flash').innerHTML = "35&nbsp;ms";
+  document.getElementById("eteintFlash").value = 25;
+  document.getElementById('val_eteint_flash').innerHTML = "25&nbsp;ms";
+  document.getElementById("nbFlash").value     =  5;
+  document.getElementById('val_nb_flash').innerHTML = 5;
+  // Boutons de tests
+  btn_on_off = document.getElementById("btn_test_vol");
+  btn_on_off.classList.remove("on");
+  btn_on_off.classList.add("off");
+  btn_on_off.src = "images/btnoff.svg";
+  btn_on_off = document.getElementById("btn_test_verrou");
+  btn_on_off.classList.remove("on");
+  btn_on_off.classList.add("off");
+  btn_on_off.src = "images/btnoff.svg";
+}
+function toggleTestVol() {
+  var btn_on_off = document.getElementById("btn_test_vol");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+  } else {
+    // Passage de off a on
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    // Si le test verrou est actif, on le désactive
+    btn_on_off = document.getElementById("btn_test_verrou");
+    if (btn_on_off.classList.contains("on")) {
+      // Passage de on a off
+      btn_on_off.classList.remove("on");
+      btn_on_off.classList.add("off");
+      btn_on_off.src = "images/btnoff.svg";
+    }
+  }
+  XMLHttpRequest_post("/testflasher");
+}
+function toggleTestVerrou() {
+  var btn_on_off = document.getElementById("btn_test_verrou");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+
+  } else {
+    // Passage de off a on
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    // Si le test vol est actif, on le désactive
+    btn_on_off = document.getElementById("btn_test_vol");
+    if (btn_on_off.classList.contains("on")) {
+      // Passage de on a off
+      btn_on_off.classList.remove("on");
+      btn_on_off.classList.add("off");
+      btn_on_off.src = "images/btnoff.svg";
+    }
+  }
+  XMLHttpRequest_post("/testflasher");
+}
+function stopFlashTest() {
+  // Si le test vol est actif, on le désactive
+  btn_on_off = document.getElementById("btn_test_vol");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+  }
+  // Si le test verrou est actif, on le désactive
+  btn_on_off = document.getElementById("btn_test_verrou");
+  if (btn_on_off.classList.contains("on")) {
+    // Passage de on a off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+  }
+  XMLHttpRequest_post("/testflasher");
+}
+function updateFlashValue(slider) {
+  if (slider.id == "cycleFlash") {
+    document.getElementById('val_cycle_flash').innerHTML = String(slider.value) + '&nbsp;s';
+  } else if (slider.id == "allumeFlash") {
+    document.getElementById('val_allume_flash').innerHTML = String(slider.value) + '&nbsp;ms';
+  } else if (slider.id == "eteintFlash") {
+    document.getElementById('val_eteint_flash').innerHTML = String(slider.value) + '&nbsp;ms';
+  } else if (slider.id == "nbFlash") {
+    document.getElementById('val_nb_flash').innerHTML = String(slider.value);
+  }
+  // Si un test est actif, on l'arrete et on le relance pour passer les nouvelles valeurs
+  if (document.getElementById("btn_test_vol").classList.contains("on")) {
+    document.getElementById("btn_test_vol").classList.remove("on")
+    XMLHttpRequest_post("/testflasher");
+    document.getElementById("btn_test_vol").classList.add("on")
+    XMLHttpRequest_post("/testflasher");
+  }
+  if (document.getElementById("btn_test_verrou").classList.contains("on")) {
+    document.getElementById("btn_test_verrou").classList.remove("on")
+    XMLHttpRequest_post("/testflasher");
+    document.getElementById("btn_test_verrou").classList.add("on")
+    XMLHttpRequest_post("/testflasher");
+  }
+}
+
+
 
 
 

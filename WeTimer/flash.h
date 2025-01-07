@@ -22,9 +22,9 @@
 #ifndef flash_h
   #define flash_h
 
-  #define ON_TIME    35 // 300  milliseconds
-  #define OFF_TIME   25 // 200  milliseconds
-  #define T_CYCLE  2000 //   2  secondes
+  #define ON_TIME    35 //  35 milliseconds
+  #define OFF_TIME   25 //  25 milliseconds
+  #define T_CYCLE  2000 //   2 secondes
   #define N_FLASH     5 // Number of flash by cycles
 
   enum flashMode {

@@ -76,38 +76,23 @@
         <div id="main_form">
           <div class="nomargin center">
             <div class="vertical_space">
-            <div class="flex_100">
-              <input type="number" name="tempVol" id="tempVol"
-                min="1" max="1800" step="1" value="180"
-                onfocus="this.select();"
-                oninput="calculTemps('tempVol', 'tempsMinutes');"
-                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-              />
-              <div class="b1 bm1" tabindex="-1" 
-                onclick="doNothing();"
-                ontouchstart="beginTouch(event, 'tempVol', -1);" 
-                onmousedown="beginChange('tempVol', -1);" 
-                ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
-                onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
-              ></div>
-                <!--value="&nbsp;&lt;&nbsp;"-->
-              <div class="b1 bp1" tabindex="-1" 
-                onclick="doNothing();"
-                ontouchstart="beginTouch(event, 'tempVol',  1);" 
-                onmousedown="beginChange('tempVol',  1);" 
-                ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
-                onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" 
-              ></div>
-                <!--value="&nbsp;&gt;&nbsp;" -->
-            </div>
+              <div class="flex_100">
+                <input type="number" name="tempVol" id="tempVol" min="1" max="1800" step="1" value="180" onfocus="this.select();" oninput="calculTemps('tempVol', 'tempsMinutes');" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+                <div class="b1 bm1" tabindex="-1" onclick="doNothing();" ontouchstart="beginTouch(event, 'tempVol', -1);" onmousedown="beginChange('tempVol', -1);" ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" >
+                </div>
+                  <!--value="&nbsp;&lt;&nbsp;"-->
+                <div class="b1 bp1" tabindex="-1" onclick="doNothing();" ontouchstart="beginTouch(event, 'tempVol',  1);" onmousedown="beginChange('tempVol',  1);" ontouchend="stopTouch(event, 'tempVol'); calculTemps('tempVol', 'tempsMinutes');" onmouseup="stopChange('tempVol'); calculTemps('tempVol', 'tempsMinutes');" >
+                </div>
+                  <!--value="&nbsp;&gt;&nbsp;" -->
+              </div>
             </div>
             <div class="vertical_space">
-            <div class="flex_100">
-              <div class="b1 bmm" tabindex="-1" onclick="changeVal('tempVol', -60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
-              <div class="b1 bm2" tabindex="-1" onclick="changeVal('tempVol', -10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
-              <div class="b1 bp2" tabindex="-1" onclick="changeVal('tempVol',  10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
-              <div class="b1 bpm" tabindex="-1" onclick="changeVal('tempVol',  60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
-            </div>
+              <div class="flex_100">
+                <div class="b1 bmm" tabindex="-1" onclick="changeVal('tempVol', -60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+                <div class="b1 bm2" tabindex="-1" onclick="changeVal('tempVol', -10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+                <div class="b1 bp2" tabindex="-1" onclick="changeVal('tempVol',  10); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+                <div class="b1 bpm" tabindex="-1" onclick="changeVal('tempVol',  60); calculTemps('tempVol', 'tempsMinutes');">&nbsp;</div>
+              </div>
             </div>
           </div>
           <p class="center" id="tempsMinutes">0 minute(s) 0 seconde(s)</p>
@@ -133,6 +118,7 @@
         <span id="saveLinkSpan" class="noshow"><a id="saveLink" href="/getjson" download="wetimer.json">Enregistrer...</a></span>
         <menu id="menu" class="dropdown noshow">
           <div class="menuItem" onclick="inputDescription()";><li>Description...</li></div>
+          <div class="menuItem" onclick="ConfigFlasher()";><li>Flasher...</li></div>
           <hr class="menu_hr" />
           <div class="menuItem" onclick="saveFile();"><li>Ouvrir...</li></div>
           <div class="menuItem" onclick="openFile();"><li>Enregistrer...</li></div>
@@ -178,41 +164,16 @@
         <p class="explications">Délais indiqués en secondes avec deux décimales possibles.</p>
         <div class="nomargin center">
           <div  class="flex_95">
-            <div class="b2 bm2" tabindex="-1"
-              ontouchstart="beginTouch(event, 'delaiSec', -0.1);" 
-              onmousedown="beginChange('delaiSec',  -0.1);" 
-              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
-              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
-            ></div>
-              <!--value="&nbsp;&lt;&lt;&nbsp;"-->
-            <div class="b2 bm1" tabindex="-1"
-              ontouchstart="beginTouch(event, 'delaiSec', -0.01);" 
-              onmousedown="beginChange('delaiSec',  -0.01);" 
-              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
-              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
-            ></div>
-              <!--value="&nbsp;&lt;&nbsp;"-->
-            <input type="number" name="delaiSec" id="delaiSec"
-              min="0" max="1800" step="0.01" value="0.00"
-              onfocus="this.select();"
-              oninput="calculTemps('delaiSec', 'delaiMinutes', false);"
-              onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-            />
-            <div class="b2 bp1" tabindex="-1"
-              ontouchstart="beginTouch(event, 'delaiSec', 0.01);" 
-              onmousedown="beginChange('delaiSec',  0.01);" 
-              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
-              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
-            ></div>
-              <!--value="&nbsp;&gt;&nbsp;"-->
-            <div class="b2 bp2" tabindex="-1"
-              ontouchstart="beginTouch(event, 'delaiSec', 0.1);" 
-              onmousedown="beginChange('delaiSec',  0.1);" 
-              ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);"
-              onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" 
-            ></div>
-            <!--value="&nbsp;&gt;&gt;&nbsp;"-->
-          </div>
+            <div class="b2 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'delaiSec', -0.1);" onmousedown="beginChange('delaiSec',  -0.1);" ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);">
+            </div>
+            <div class="b2 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'delaiSec', -0.01);" onmousedown="beginChange('delaiSec',  -0.01);" ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);">
+            </div>
+            <input type="number" name="delaiSec" id="delaiSec" min="0" max="1800" step="0.01" value="0.00" onfocus="this.select();" oninput="calculTemps('delaiSec', 'delaiMinutes', false);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+            <div class="b2 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'delaiSec', 0.01);" onmousedown="beginChange('delaiSec',  0.01);" ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);">
+            </div>
+            <div class="b2 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'delaiSec', 0.1);" onmousedown="beginChange('delaiSec',  0.1);" ontouchend="stopTouch(event, 'delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);" onmouseup="stopChange('delaiSec'); calculTemps('delaiSec', 'delaiMinutes', false);">
+            </div>
+          </div> <!-- class="flex_95" -->
           <br />
           <div  class="flex_95">
             <div class="b2 bmm" tabindex="-1" onclick="changeVal('delaiSec', -60, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
@@ -221,13 +182,13 @@
             <div class="b2 bp1" tabindex="-1" onclick="changeVal('delaiSec',  1, false);    calculTemps('delaiSec', 'delaiMinutes', false);"></div>
             <div class="b2 bp2" tabindex="-1" onclick="changeVal('delaiSec',  10, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
             <div class="b2 bpm" tabindex="-1" onclick="changeVal('delaiSec',  60, false);   calculTemps('delaiSec', 'delaiMinutes', false);"></div>
-          </div>
-        </div>
+          </div> <!-- class="flex_95" -->
+        </div> <!-- class="nomargin center" -->
         <p class="center" id="delaiMinutes">0 minute(s) 0 seconde(s)</p>
         <div class="boutonOKAnnuler" >
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="delaiOK();"    value="&nbsp;&nbsp;OK&nbsp;&nbsp;" />
-        </div>
+        </div> <!-- class="boutonOKAnnuler" -->
       </div> <!-- input_delai -->
       <!-- Dialogue de saisie des configuration de servo (plage de réglages) -->
       <div id="input_servo" class="inputBox noshow" onclick="event.stopPropagation();">
@@ -241,162 +202,68 @@
             <input type="hidden" id="oldPwm2"    name="oldPwm2"    value="0" />
             <div class="flex_100">
               <label for="course1">Extrémité 1</label>
-              <input type="number" name="course1" id="course1" class="cServoInput"
-                min="-2400" max="2400" step="1" value="544"
-                onfocus="this.select();"
-                oninput="changePlageServo(this.id);"
-                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-              />
-              <div class="b3 bm2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course1', -10);" 
-                onmousedown="beginChange('course1',  -10);" 
-                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
-                onmouseup="stopChange('course1'); changePlageServo('course1')" 
-              ></div>
-                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
-              <div class="b3 bm1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course1', -1);" 
-                onmousedown="beginChange('course1',  -1);" 
-                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
-                onmouseup="stopChange('course1'); changePlageServo('course1')" 
-              ></div>
-                <!--value="&nbsp;&nbsp;&lt;&nbsp;&nbsp;"-->
-              <div class="b3 bp1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course1', 1);" 
-                onmousedown="beginChange('course1',  1);" 
-                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
-                onmouseup="stopChange('course1'); changePlageServo('course1')" 
-              ></div>
-                <!--value="&nbsp;&nbsp;&gt;&nbsp;&nbsp;"-->
-              <div class="b3 bp2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course1', 10);" 
-                onmousedown="beginChange('course1',  10);" 
-                ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')"
-                onmouseup="stopChange('course1'); changePlageServo('course1')" 
-              ></div>
-                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
-            </div>
-            <!--<br />-->
+              <input type="number" name="course1" id="course1" class="cServoInput" min="-2400" max="2400" step="1" value="544" onfocus="this.select();" oninput="changePlageServo(this.id);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+              <div class="b3 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'course1', -10);" onmousedown="beginChange('course1',  -10);" ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')" onmouseup="stopChange('course1'); changePlageServo('course1')">
+              </div>
+              <div class="b3 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'course1', -1);" onmousedown="beginChange('course1',  -1);" ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')" onmouseup="stopChange('course1'); changePlageServo('course1')">
+              </div>
+              <div class="b3 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'course1', 1);" onmousedown="beginChange('course1',  1);" ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')" onmouseup="stopChange('course1'); changePlageServo('course1')">
+              </div>
+              <div class="b3 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'course1', 10);" onmousedown="beginChange('course1',  10);" ontouchend="stopTouch(event, 'course1'); changePlageServo('course1')" onmouseup="stopChange('course1'); changePlageServo('course1')">
+              </div>
+            </div> <!-- class="flex_100" -->
             <div class="flex_100">
               <label for="course2">Extrémité 2</label>
-              <input type="number" name="course2" id="course2" class="cServoInput"
-                min="-2400" max="2400" step="1" value="2400"
-                onfocus="this.select();"
-                oninput="changePlageServo(this.id);"
-                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-              />
-              <div class="b3 bm2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course2', -10);" 
-                onmousedown="beginChange('course2',  -10);" 
-                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
-                onmouseup="stopChange('course2'); changePlageServo('course2')" 
-              ></div>
-                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
-              <div class="b3 bm1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course2', -1);" 
-                onmousedown="beginChange('course2',  -1);" 
-                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
-                onmouseup="stopChange('course2'); changePlageServo('course2')" 
-              ></div>
-                <!--value="&nbsp;&nbsp;&lt;&nbsp;&nbsp;"-->
-              <div class="b3 bp1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course2', 1);" 
-                onmousedown="beginChange('course2',  1);" 
-                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
-                onmouseup="stopChange('course2'); changePlageServo('course2')" 
-              ></div>
-                <!--value="&nbsp;&nbsp;&gt;&nbsp;&nbsp;"-->
-              <div class="b3 bp2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'course2', 10);" 
-                onmousedown="beginChange('course2',  10);" 
-                ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')"
-                onmouseup="stopChange('course2'); changePlageServo('course2')" 
-              ></div>
-                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
-            </div>
-          </p>
+              <input type="number" name="course2" id="course2" class="cServoInput" min="-2400" max="2400" step="1" value="2400" onfocus="this.select();" oninput="changePlageServo(this.id);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+              <div class="b3 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'course2', -10);" onmousedown="beginChange('course2',  -10);" ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')" onmouseup="stopChange('course2'); changePlageServo('course2')">
+              </div>
+              <div class="b3 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'course2', -1);" onmousedown="beginChange('course2',  -1);" ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')" onmouseup="stopChange('course2'); changePlageServo('course2')">
+              </div>
+              <div class="b3 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'course2', 1);" onmousedown="beginChange('course2',  1);" ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')" onmouseup="stopChange('course2'); changePlageServo('course2')">
+              </div>
+              <div class="b3 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'course2', 10);" onmousedown="beginChange('course2',  10);" ontouchend="stopTouch(event, 'course2'); changePlageServo('course2')" onmouseup="stopChange('course2'); changePlageServo('course2')">
+              </div>
+            </div> <!-- class="flex_100" -->
+          </p> <!-- Valeurs de programmation -->
           <p>Impulsion PWM (microsecondes) :<br />
             <div class="pos_relative">
-              <div class="NOtable">
-                <div class="NOrow">
-                  <div class="NOcell">
+              <div>
+                <div>
+                  <div>
                     <input type="hidden" id="oldPwm1" name="oldPwm1" value="0" />
                     <input type="hidden" id="oldPwm2" name="oldPwm2" value="0" />
                     <div class="flex_90">
                       <label for="pwm1">Extrémité 1</label>
-                      <input type="number" name="pwm1" id="pwm1" class="cServoInput"
-                        min="544" max="2400" step="1" value="544"
-                        onfocus="this.select();"
-                        oninput="changePlageServo(this.id);"
-                        onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-                      />
-                      <div class="b3 bm2" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm1', -10);" 
-                        onmousedown="beginChange('pwm1',  -10);" 
-                        ontouchend="stopTouch(event, 'pwm1');"
-                        onmouseup="stopChange('pwm1');" 
-                      ></div>
-                      <div class="b3 bm1" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm1', -1);" 
-                        onmousedown="beginChange('pwm1',  -1);" 
-                        ontouchend="stopTouch(event, 'pwm1');"
-                        onmouseup="stopChange('pwm1');" 
-                      ></div>
-                      <div class="b3 bp1" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm1', 1);" 
-                        onmousedown="beginChange('pwm1',  1);" 
-                        ontouchend="stopTouch(event, 'pwm1');"
-                        onmouseup="stopChange('pwm1');" 
-                      ></div>
-                      <div class="b3 bp2" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm1', 10);" 
-                        onmousedown="beginChange('pwm1',  10);" 
-                        ontouchend="stopTouch(event, 'pwm1');"
-                        onmouseup="stopChange('pwm1');" 
-                      ></div>
-                    </div>
-                    <!--<br />-->
+                      <input type="number" name="pwm1" id="pwm1" class="cServoInput" min="544" max="2400" step="1" value="544" onfocus="this.select();" oninput="changePlageServo(this.id);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+                      <div class="b3 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'pwm1', -10);" onmousedown="beginChange('pwm1',  -10);" ontouchend="stopTouch(event, 'pwm1');" onmouseup="stopChange('pwm1');">
+                      </div>
+                      <div class="b3 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'pwm1', -1);" onmousedown="beginChange('pwm1',  -1);" ontouchend="stopTouch(event, 'pwm1');" onmouseup="stopChange('pwm1');">
+                      </div>
+                      <div class="b3 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'pwm1', 1);" onmousedown="beginChange('pwm1',  1);" ontouchend="stopTouch(event, 'pwm1');" onmouseup="stopChange('pwm1');">
+                      </div>
+                      <div class="b3 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'pwm1', 10);" onmousedown="beginChange('pwm1',  10);" ontouchend="stopTouch(event, 'pwm1');" onmouseup="stopChange('pwm1');">
+                      </div>
+                    </div> <!-- class="flex_90" -->
                     <div class="flex_90">
                       <label for="pwm2">Extrémité 2</label>
-                      <input type="number" name="pwm2" id="pwm2" class="cServoInput"
-                        min="544" max="2400" step="1" value="2400"
-                        onfocus="this.select();"
-                        oninput="changePlageServo(this.id);"
-                        onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-                      />
-                      <div class="b3 bm2" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm2', -10);" 
-                        onmousedown="beginChange('pwm2',  -10);" 
-                        ontouchend="stopTouch(event, 'pwm2');"
-                        onmouseup="stopChange('pwm2');" 
-                      ></div>
-                      <div class="b3 bm1" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm2', -1);" 
-                        onmousedown="beginChange('pwm2',  -1);" 
-                        ontouchend="stopTouch(event, 'pwm2');"
-                        onmouseup="stopChange('pwm2');" 
-                      ></div>
-                      <div class="b3 bp1" tabindex="-1"
-                        ontouchstart="beginTouch(event, 'pwm2', 1);" 
-                        onmousedown="beginChange('pwm2',  1);" 
-                        ontouchend="stopTouch(event, 'pwm2');"
-                        onmouseup="stopChange('pwm2');" 
-                      ></div>
-                      <div class="b3 bp2" tabindex="-1" 
-                        ontouchstart="beginTouch(event, 'pwm2', 10);" 
-                        onmousedown="beginChange('pwm2',  10);" 
-                        ontouchend="stopTouch(event, 'pwm2');"
-                        onmouseup="stopChange('pwm2');" 
-                      ></div>
-                    </div>
-                  </div> <!-- cell -->
-                  <div class="rowspanned NOcell">
+                      <input type="number" name="pwm2" id="pwm2" class="cServoInput" min="544" max="2400" step="1" value="2400" onfocus="this.select();" oninput="changePlageServo(this.id);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+                      <div class="b3 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'pwm2', -10);" onmousedown="beginChange('pwm2',  -10);" ontouchend="stopTouch(event, 'pwm2');" onmouseup="stopChange('pwm2');">
+                      </div>
+                      <div class="b3 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'pwm2', -1);" onmousedown="beginChange('pwm2',  -1);" ontouchend="stopTouch(event, 'pwm2');" onmouseup="stopChange('pwm2');">
+                      </div>
+                      <div class="b3 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'pwm2', 1);" onmousedown="beginChange('pwm2',  1);" ontouchend="stopTouch(event, 'pwm2');" onmouseup="stopChange('pwm2');">
+                      </div>
+                      <div class="b3 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'pwm2', 10);" onmousedown="beginChange('pwm2',  10);" ontouchend="stopTouch(event, 'pwm2');" onmouseup="stopChange('pwm2');">
+                      </div>
+                    </div> <!-- class="flex_90" -->
+                  </div>
+                  <div class="rowspanned">
                     <div class="btnSwap" tabindex="-1" onclick="swapPWM()"></div>
-                  </div> <!-- cell -->
-                </div> <!-- row -->
-              </div> <!-- table -->
-            </div> <!-- pos_relative -->
-          </p>
+                  </div> <!-- class="rowspanned" -->
+                </div>
+              </div>
+            </div> <!-- class="pos_relative" -->
+          </p> <!-- Impulsion PWM (microsecondes) -->
           <p>
             <div>
               <span>Test mode : </span>
@@ -406,29 +273,21 @@
               <label for="sliderImp">Impulsion</label>
             </div>
             <div class="ligne_slider">
-              <div class="b4 bm1" tabindex="-1" 
-                ontouchstart="beginTouch(event, 'confRange', -1);" 
-                onmousedown="beginChange('confRange', -1);" 
-                ontouchend="stopTouch(event, 'confRange');" 
-                onmouseup="stopChange('confRange');" 
-              ></div>
+              <div class="b4 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'confRange', -1);" onmousedown="beginChange('confRange', -1);" ontouchend="stopTouch(event, 'confRange');" onmouseup="stopChange('confRange');">
+              </div>
               <div class="centre_ligne_slider">
                 <p><span id="rangeValue">1472</span></p>
                 <p><input id="confRange" class="slider" type="range" min="544" max="2400" value="1472" oninput="showRangeVal(this.value)" onchange="showRangeVal(this.value); XMLHttpRequest_post('/servotest')" /></p>
+              </div> <!-- class="centre_ligne_slider" -->
+              <div class="b4 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'confRange',  1);" onmousedown="beginChange('confRange',  1);" ontouchend="stopTouch(event, 'confRange');" onmouseup="stopChange('confRange');">
               </div>
-              <div class="b4 bp1" tabindex="-1" 
-                ontouchstart="beginTouch(event, 'confRange',  1);" 
-                onmousedown="beginChange('confRange',  1);" 
-                ontouchend="stopTouch(event, 'confRange');" 
-                onmouseup="stopChange('confRange');" 
-              ></div>
             </div> <!-- ligne_slider -->
           </p>
-        </div>
+        </div> <!-- class="nomargin gauche" -->
         <div class="boutonOKAnnuler" >
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="servoOK();"    value="Valider" />
-        </div>
+        </div> <!-- class="boutonOKAnnuler" -->
       </div> <!-- input_servo -->
       <!-- Dialogue de saisie des positions de servo -->
       <div id="input_position" class="inputBox noshow" onclick="event.stopPropagation();">
@@ -437,41 +296,16 @@
         <div class="nomargin gauche">
           <div class="nomargin center">
             <div class="flex_95">
-              <div class="b2 bm2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'posAdjust', -10);" 
-                onmousedown="beginChange('posAdjust',  -10);" 
-                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
-                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
-              ></div>
-                <!--value="&nbsp;&lt;&lt;&nbsp;"-->
-              <div class="b2 bm1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'posAdjust', -1);" 
-                onmousedown="beginChange('posAdjust',  -1);" 
-                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
-                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
-              ></div>
-                <!--value="&nbsp;&lt;&nbsp;"-->
-              <input type="number" name="posAdjust" id="posAdjust"
-                min="0" max="1800" step="0.01" value="0.00"
-                onfocus="this.select();"
-                oninput="setPosRangeVal(this.value);"
-                onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));"
-              />
-              <div class="b2 bp1" tabindex="-1"
-                ontouchstart="beginTouch(event, 'posAdjust', 1);" 
-                onmousedown="beginChange('posAdjust',  1);" 
-                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
-                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
-              ></div>
-                <!--value="&nbsp;&gt;&nbsp;"-->
-              <div class="b2 bp2" tabindex="-1"
-                ontouchstart="beginTouch(event, 'posAdjust', 10);" 
-                onmousedown="beginChange('posAdjust',  10);" 
-                ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);"
-                onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" 
-              ></div>
-                <!--value="&nbsp;&gt;&gt;&nbsp;"-->
-            </div>
+              <div class="b2 bm2" tabindex="-1" ontouchstart="beginTouch(event, 'posAdjust', -10);" onmousedown="beginChange('posAdjust',  -10);" ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);">
+              </div>
+              <div class="b2 bm1" tabindex="-1" ontouchstart="beginTouch(event, 'posAdjust', -1);" onmousedown="beginChange('posAdjust',  -1);" ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);">
+              </div>
+              <input type="number" name="posAdjust" id="posAdjust" min="0" max="1800" step="0.01" value="0.00" onfocus="this.select();" oninput="setPosRangeVal(this.value);" onchange="forceInterval(this, Number(this.value), Number(this.min), Number(this.max));" />
+              <div class="b2 bp1" tabindex="-1" ontouchstart="beginTouch(event, 'posAdjust', 1);" onmousedown="beginChange('posAdjust',  1);" ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);">
+              </div>
+              <div class="b2 bp2" tabindex="-1" ontouchstart="beginTouch(event, 'posAdjust', 10);" onmousedown="beginChange('posAdjust',  10);" ontouchend="stopTouch(event, 'posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);" onmouseup="stopChange('posAdjust'); calculTemps('posAdjust', 'delaiMinutes', false);">
+              </div>
+            </div> <!-- class="flex_95" -->
             <br />
             <div class="tbl_slider">
               <div class="row">
@@ -479,9 +313,7 @@
                   <span id="posLimit1">XXX</span>
                 </div>
                 <div class="col_centre">
-                  <input id="posRange" class="slider" type="range" min="544" max="2400" value="1472" oninput="showPosRangeVal(this.value)"
-                    onchange="showPosRangeVal(this.value); XMLHttpRequest_post('/servopos');"
-                  />
+                  <input id="posRange" class="slider" type="range" min="544" max="2400" value="1472" oninput="showPosRangeVal(this.value)" onchange="showPosRangeVal(this.value); XMLHttpRequest_post('/servopos');" />
                 </div>
                 <div class="col_droite">
                   <span id="posLimit2">XXX</span>
@@ -492,8 +324,8 @@
               </div>
             </div> <!-- tbl_slider -->
             <br />
-          </div>
-        </div>
+          </div> <!-- class="nomargin center" -->
+        </div> <!-- class="nomargin gauche" -->
         <div class="boutonOKAnnuler" >
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="dialogHide();" value="Annuler" />
           <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="positionOK();"    value="Valider" />
@@ -503,7 +335,7 @@
       <div id="input_wifi" class="inputBox noshow" onclick="event.stopPropagation();">
         <p id="input_position_title" class="inputTitle">Configuration WiFi</p>
         <div class="nomargin gauche">
-        <br />
+          <br />
           <div class="flex_wifi">
             <div class="flex_wifi_col1">
               <div class="flex_wifi_label">
@@ -550,7 +382,66 @@
               <input type="button" id="btnValideAP" class="btnOkAnnuler" tabindex="-1" onclick="updateAPconfig();" value="Valider" />
             </div>
           </div>
-      </div>
+        </div> <!-- class="nomargin gauche" -->
+      </div> <!-- id="input_wifi" -->
+      <!-- Dialogue de saisie de la configuration flasher -->
+      <div id="input_flasher" class="inputBox noshow" onclick="event.stopPropagation();">
+        <p id="input_position_title" class="inputTitle">Configuration flash</p>
+        <div class="nomargin gauche">
+          <br />
+          <div class="flex_flash">
+            <div id="flash_status_verrou" class="flex_flash_1">Flash déverrouillage actif</div>
+            <div class="flex_flash_0"><image id="btn_flash_verrou" class="flash_on_off on" src="images/btnon.svg" onclick="toogleFlashVerrou()"/></div>
+          </div>
+          <div class="flex_flash">
+            <div id="flash_status_vol" class="flex_flash_1">Flash vol actif</div>
+            <div class="flex_flash_0"><image id="btn_flash_vol" class="flash_on_off on" src="images/btnon.svg" onclick="toogleFlashVol()"/></div>
+          </div>
+          <div class="flex_flash">
+            <div class="flex_flash_1">Durée du cycle flash</div>
+            <div class="flex_flash_1">
+              <input id="cycleFlash" class="slider" type="range" min="1" max="10" value="2" oninput="updateFlashValue(this);" />
+            </div>
+            <div id="val_cycle_flash" class="val_flash">2&nbsp;s</div>
+          </div>
+          <div class="flex_flash">
+            <div class="flex_flash_1">Temps allumage LED</div>
+            <div class="flex_flash_1">
+              <input id="allumeFlash" class="slider" type="range" min="10" max="99" value="35" oninput="updateFlashValue(this);" />
+            </div>
+            <div id="val_allume_flash" class="val_flash">35&nbsp;ms</div>
+          </div>
+          <div class="flex_flash">
+            <div class="flex_flash_1">Temps extinction LED</div>
+            <div class="flex_flash_1">
+              <input id="eteintFlash" class="slider" type="range" min="10" max="99" value="25" oninput="updateFlashValue(this);" />
+            </div>
+            <div id="val_eteint_flash" class="val_flash">25&nbsp;ms</div>
+          </div>
+          <div class="flex_flash">
+            <div class="flex_flash_1">NB flash par cycle</div>
+            <div class="flex_flash_1">
+              <input id="nbFlash" class="slider" type="range" min="1" max="9" value="5" oninput="updateFlashValue(this);" />
+            </div>
+            <div id="val_nb_flash" class="val_flash">5</div>
+          </div> <!-- flex_flash -->
+          <br />
+          <div class="flex_flash">
+            <div class="flex_flash_0 mr7">Test&nbsp;vol</div>
+            <div class="flex_flash_1"><image id="btn_test_vol" class="flash_on_off off" src="images/btnoff.svg" onclick="toggleTestVol()"/></div>
+            <div class="flex_flash_0">Test&nbsp;déverrouillage</div>
+            <div class="flex_flash_0"><image id="btn_test_verrou" class="flash_on_off off" src="images/btnoff.svg" onclick="toggleTestVerrou()"/></div>
+          </div>
+          <div style="width: 100%">
+            <br />
+            <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="flashDefault();"   value="Valeur par défaut" />
+            <div class="boutonOKAnnuler" >
+              <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="stopFlashTest(); dialogHide();"     value="Annuler" />
+              <input type="button" id="btnValideFlash" class="btnOkAnnuler" tabindex="-1" onclick="stopFlashTest(); updateFlasher();" value="Valider" />
+            </div>
+          </div>
+        </div> <!-- class="nomargin gauche" -->
+      </div> <!-- input_flasher -->
     </div> <!-- dialog_mask -->
   </body>
 </html>
