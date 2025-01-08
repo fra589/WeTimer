@@ -64,7 +64,10 @@ void webServerInit(void) {
   server.on("/uploadconfig",     handleUpload);
   server.on("/setapconfig",      handleSetApConfig);
   server.on("/setdescription",   handleSetDescription);
+  server.on("/getflashdata",     handleGetFashData);
   server.on("/testflasher",      handleTestFlasher);
+  server.on("/resetflashdata",   handleResetFlashData);
+  server.on("/setflashdata",     handleSetFashData);
   
   server.onNotFound(handleNotFound);
 
@@ -1243,6 +1246,39 @@ void handleSetDescription(void) {
   server.send(200,"text/xml",XML);
 
 }
+void handleResetFlashData(void) {
+  // Recharge les données de l'EEPROM
+  getEepromFlashData();
+  // Renvoie les données au client http
+  handleGetFashData();
+}
+void handleGetFashData(void) {
+
+  String XML;
+  
+  #ifdef DEBUG_WEB
+    WT_PRINTF("Entrée dans handleGetFashData()\n");
+  #endif
+
+  // Construit la réponse
+  XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+  XML += F("<WeTimerFlash>\n");
+  XML += F("  <flash_verrou>") + String(flash_verrou)  + F("</flash_verrou>\n");
+  XML += F("  <flash_vol_on>") + String(flash_vol_on)  + F("</flash_vol_on>\n");
+  XML += F("  <tOn>")          + String(tOn)           + F("</tOn>\n");
+  XML += F("  <tOff>")         + String(tOff)          + F("</tOff>\n");
+  XML += F("  <tCycle>")       + String(tCycle / 1000) + F("</tCycle>\n");
+  XML += F("  <nFlash>")       + String(nFlash)        + F("</nFlash>\n");
+  XML += F("</WeTimerFlash>\n");
+
+  // Renvoi la réponse au client http
+  server.send(200,"text/xml",XML);
+
+  #ifdef DEBUG_WEB
+    WT_PRINTF("handleGetFashData() : données envoyées.\n");
+  #endif
+
+}
 void handleTestFlasher(void) {
 
   String XML;
@@ -1250,6 +1286,7 @@ void handleTestFlasher(void) {
   
   #ifdef DEBUG_WEB
     WT_PRINTF("Entrée dans handleTestFlasher() --- %d\n", millis()/1000);
+    WT_PRINTF("Parametres html = [%s]\n", server.arg("plain").c_str());
   #endif
 
   if (!server.hasArg("mode")){
@@ -1304,6 +1341,20 @@ void handleTestFlasher(void) {
     }
   }
 
+  if (server.hasArg("flash_verrou")){
+    flash_verrou = (server.arg("flash_verrou") == "1");
+    #ifdef DEBUG_WEB
+      WT_PRINTF("handleTestFlasher() : flash_verrou = %s\n", flash_verrou ? "true" : "false");
+    #endif
+  }
+
+  if (server.hasArg("flash_vol_on")){
+    flash_vol_on = (server.arg("flash_vol_on") == "1");
+    #ifdef DEBUG_WEB
+      WT_PRINTF("handleTestFlasher() : flash_vol_on = %s\n", flash_vol_on ? "true" : "false");
+    #endif
+  }
+
   if (server.arg("mode") == "0") {
     setFlasher(FLASH_OFF);
   } else if (server.arg("mode") == "1") {
@@ -1316,14 +1367,38 @@ void handleTestFlasher(void) {
     #ifdef DEBUG_WEB
       WT_PRINTF("handleTestFlasher() : Flash mode invalide (%s)\n", server.arg("mode").c_str());
     #endif
+    XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+    XML += F("<testflasher>\n");
+    XML += F("  <result>testflasher: invalid parameter mode!</result>\n");
+    XML += F("</testflasher>\n");
+    server.send(200,"text/xml",XML);
+    return;
   }
 
   // Réponse au client
   XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
-  XML += F("<setapconfig>\n");
+  XML += F("<testflasher>\n");
   XML += F("  <result>OK</result>\n");
-  XML += F("</setapconfig>\n");
+  XML += F("</testflasher>\n");
   // Renvoi la réponse au client http
   server.send(200,"text/xml",XML);
 
 }
+void handleSetFashData(void) {
+  // Même données que pour les tests
+  handleTestFlasher();
+  // Sauvegarde les données en EEPROM
+  updateEepromFlashData();
+}
+
+
+
+
+
+
+
+
+
+
+
+

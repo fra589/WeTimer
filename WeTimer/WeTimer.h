@@ -61,7 +61,7 @@
   #define APP_NAME              "WeTimer"
   #define APP_VERSION_MAJOR     "2"
   #define APP_VERSION_MINOR     "0"
-  #define APP_VERSION_DATE      "20250106"
+  #define APP_VERSION_DATE      "20250108"
   #define APP_VERSION_STRING    "v" APP_VERSION_MAJOR "." APP_VERSION_MINOR "." APP_VERSION_DATE
   #define APP_VERSION_VERIF     "[" APP_NAME ",v" APP_VERSION_MAJOR "." APP_VERSION_MINOR
   #define APP_NAME_VERSION      APP_NAME " - " APP_VERSION_STRING "\0"
@@ -203,6 +203,8 @@
   extern volatile bool recuExternRDT;
   extern unsigned long dureeBoucle;
   // Flasher
+  extern bool flash_verrou;
+  extern bool flash_vol_on;
   extern unsigned long tOn;
   extern unsigned long tOff;
   extern unsigned long tCycle;

@@ -29,7 +29,7 @@ void getEepromStartupData(void) {
   int data_address = ADDR_DATA;
   int conf_address = ADDR_CONF_SERVOS;
   
-  #ifdef DEBUG
+  #ifdef DEBUG_EEPROM
     bool default_value;
   #endif
   
@@ -83,7 +83,7 @@ void getEepromStartupData(void) {
         EEPROM.get(conf_address, dTmp);
         if (dTmp != 0xFFFFFFFF) {
           cservo[i][j] = dTmp;
-          #ifdef DEBUG
+          #ifdef DEBUG_EEPROM
             default_value = false;
           } else {
             default_value = true;
@@ -100,7 +100,7 @@ void getEepromStartupData(void) {
       EEPROM.get(data_address, dTmp);
       if (dTmp != 0xFFFFFFFF) {
         delai[i] = dTmp;
-        #ifdef DEBUG
+        #ifdef DEBUG_EEPROM
         default_value = false;
       } else {
         default_value = true;
@@ -115,7 +115,7 @@ void getEepromStartupData(void) {
         EEPROM.get(data_address, dTmp);
         if (dTmp != 0xFFFFFFFF) {
           pservo[i][j] = dTmp;
-          #ifdef DEBUG
+          #ifdef DEBUG_EEPROM
           default_value = false;
         } else {
           default_value = true;
@@ -139,8 +139,71 @@ void getEepromStartupData(void) {
       WT_PRINTF("description............ = %s\n", description);
     #endif
   }
+  // Lecture des paramètres flash
+  getEepromFlashData();
 }
+void getEepromFlashData(void) {
+  // Récupération des paramètres flasher en EEPROM ou de leur valeur
+  // par défaut si pas de valeur en EEPROM.
 
+  char charTmp;
+  unsigned long lTmp;
+  
+  charTmp = char(EEPROM.read(ADDR_FLASH_VERROU));
+  if (charTmp != 0xFF) {
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("flash_verrou trouvé en EEPROM = 0x%x\n", charTmp);
+    #endif
+    flash_verrou = (bool)charTmp;
+  } else {
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("flash_verrou par défaut = 0x%x\n", DEFAULT_FLASH_VERROU);
+    #endif
+    flash_verrou = DEFAULT_FLASH_VERROU;
+  }
+
+  charTmp = char(EEPROM.read(ADDR_FLASH_VOL_ON));
+  if (charTmp != 0xFF) {
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("flash_vol_on trouvé en EEPROM = 0x%x\n", charTmp);
+    #endif
+    flash_vol_on = (bool)charTmp;
+  } else {
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("flash_vol_on par défaut = 0x%x\n", DEFAULT_FLASH_VOL_ON);
+    #endif
+    flash_vol_on = DEFAULT_FLASH_VOL_ON;
+  }
+
+  EEPROM.get(ADDR_FLASH_ON_TIME, lTmp);
+  if (lTmp != 0xFFFFFFFF) {
+    tOn = lTmp;
+  } else {
+    tOn = DEFAULT_ON_TIME;
+  }
+
+  EEPROM.get(ADDR_FLASH_OFF_TIME, lTmp);
+  if (lTmp != 0xFFFFFFFF) {
+    tOff = lTmp;
+  } else {
+    tOff = DEFAULT_OFF_TIME;
+  }
+
+  EEPROM.get(ADDR_FLASH_T_CYCLE, lTmp);
+  if (lTmp != 0xFFFFFFFF) {
+    tCycle = lTmp;
+  } else {
+    tCycle = DEFAULT_T_CYCLE;
+  }
+
+  EEPROM.get(ADDR_FLASH_N_FLASH, lTmp);
+  if (lTmp != 0xFFFFFFFF) {
+    nFlash = lTmp;
+  } else {
+    nFlash = DEFAULT_N_FLASH;
+  }
+
+}
 void updateEepromConf(void) {
 
   int conf_address = ADDR_CONF_SERVOS;
@@ -222,6 +285,47 @@ void updateDescription(void) {
     #endif
   }
 }
+void updateEepromFlashData(void) {
+
+  char charTmp;
+  unsigned long lTmp;
+  bool dataUpdated = false;
+  
+  charTmp = char(EEPROM.read(ADDR_FLASH_VERROU));
+  if (charTmp != flash_verrou) {
+    EEPROM.write(ADDR_FLASH_VERROU, (char)flash_verrou);
+    dataUpdated = true;
+  }
+  charTmp = char(EEPROM.read(ADDR_FLASH_VOL_ON));
+  if (charTmp != flash_vol_on) {
+    EEPROM.write(ADDR_FLASH_VOL_ON, (char)flash_vol_on);
+    dataUpdated = true;
+  }
+  EEPROM.get(ADDR_FLASH_ON_TIME, lTmp);
+  if (lTmp != tOn) {
+    EEPROM.put(ADDR_FLASH_ON_TIME, tOn);
+    dataUpdated = true;
+  }
+  EEPROM.get(ADDR_FLASH_OFF_TIME, lTmp);
+  if (lTmp != tOff) {
+    EEPROM.put(ADDR_FLASH_OFF_TIME, tOff);
+    dataUpdated = true;
+  }
+  EEPROM.get(ADDR_FLASH_T_CYCLE, lTmp);
+  if (lTmp != tCycle) {
+    EEPROM.put(ADDR_FLASH_T_CYCLE, tCycle);
+    dataUpdated = true;
+  }
+  EEPROM.get(ADDR_FLASH_N_FLASH, lTmp);
+  if (lTmp != nFlash) {
+    EEPROM.put(ADDR_FLASH_N_FLASH, nFlash);
+    dataUpdated = true;
+  }
+  if (dataUpdated) {
+    // Valide l'enregistrement si une donnée à changé.
+    EEPROM.commit();
+  }
+}
 void resetFactory(void) {
   // Reset de tous les paramètres à leur valeur par défaut
   // et reinitialisation EEPROM
@@ -237,20 +341,6 @@ void resetFactory(void) {
 
   // Sauvegarde en EEPROM
   EEPROM_format(); // On efface tout
-
-  // Pas besoin car si l'EEPROM ne contient pas de données, 
-  // on utilise les valeurs définies par défaut
-  /*
-  EEPROM_writeStr(ADDR_AP_SSID,  ap_ssid,  MAX_SSID_LEN);
-  EEPROM_writeStr(ADDR_AP_PWD,   ap_pwd,   MAX_PWD_LEN);
-  EEPROM_writeStr(ADDR_CLI_SSID, cli_ssid, MAX_SSID_LEN);
-  EEPROM_writeStr(ADDR_CLI_PWD,  cli_pwd,  MAX_PWD_LEN);
-
-  #ifdef DEBUG
-    WT_PRINTF("  EEPROM.commit()\n");
-  #endif
-  EEPROM.commit();
-  */
 
 }
 

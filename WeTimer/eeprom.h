@@ -27,20 +27,31 @@
   //----------------------------------------------------------------------------------------------------
   #define EEPROM_LENGTH 1024
   //----------------------------------------------------------------------------------------------------
-  #define ADDR_AP_SSID         0 //   0 + 32 =  32
-  #define ADDR_AP_PWD         32 //  32 + 63 =  95
-  #define ADDR_CLI_SSID       95 //  95 + 32 = 127
-  #define ADDR_CLI_PWD       127 // 126 + 63 = 190
+  #define ADDR_AP_SSID          0 //   0 + 32 =  32
+  #define ADDR_AP_PWD          32 //  32 + 63 =  95
+  #define ADDR_CLI_SSID        95 //  95 + 32 = 127
+  #define ADDR_CLI_PWD        127 // 127 + 63 = 190
   // Configuration servos
-  #define ADDR_CONF_SERVOS   200 // 132 + 4*(3*4) = 132 + 48 = 180
+  #define ADDR_CONF_SERVOS    200 // 200 + 4*(3*4) = 200 + 48 = 248
   // Timing et positions
-  #define ADDR_DATA          256 // 256 + 4*(10+(3*11)) = 256 + 172 = 428 
+  #define ADDR_DATA           256 // 256 + 4*(10+(3*11)) = 256 + 172 = 428 
                                  // 4 bytes(int) x (10 délais + (3 servos x 11 positions))
-  #define ADDR_DESCRIPTION   512 // Description de la config
+  // Configuration flash
+  #define ADDR_FLASH_VERROU   450 // 450 + 1 = 451
+  #define ADDR_FLASH_VOL_ON   451 // 451 + 1 = 452
+  #define ADDR_FLASH_ON_TIME  452 // 452 + 4 = 456
+  #define ADDR_FLASH_OFF_TIME 456 // 456 + 4 = 460
+  #define ADDR_FLASH_T_CYCLE  460 // 460 + 4 = 464
+  #define ADDR_FLASH_N_FLASH  464 // 464 + 4 = 468
+
+  // Description de la config
+  #define ADDR_DESCRIPTION   512
   
   void getEepromStartupData(void);
+  void getEepromFlashData(void);
   void updateEepromConf(void);
   void updateEepromData(void);
+  void updateEepromFlashData(void);
   void updateDescription (void);
   void resetFactory(void);
   void EEPROM_format(void);

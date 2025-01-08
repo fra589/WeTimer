@@ -62,6 +62,13 @@ bool serialComplete = false;       // whether the string is complete
 unsigned long dureeBoucle = 0;
 unsigned long bouclePrecedente;
 
+bool flash_verrou        = DEFAULT_FLASH_VERROU;
+bool flash_vol_on        = DEFAULT_FLASH_VOL_ON;
+unsigned long tOn        = DEFAULT_ON_TIME;
+unsigned long tOff       = DEFAULT_OFF_TIME;
+unsigned long tCycle     = DEFAULT_T_CYCLE;
+unsigned long nFlash     = DEFAULT_N_FLASH;
+
 //----------------------------------------------------------------------
 // Initialisation
 //----------------------------------------------------------------------
@@ -178,6 +185,9 @@ void loop() {
     // Mouvement du crochet avant
     crochet[0] = new_crochet[0];
     webSocketSend("SWITCH_0", String(crochet[0]));
+    if (isFlashEnCours()) {
+      setFlasher(FLASH_OFF);
+    }
 
     if (crochet[0] == SWITCH_ON) {
       // Crochet en position avant : câble tendu.
@@ -220,7 +230,14 @@ void loop() {
         temps.largage = millis();
         calculInstants(); // Calcul des phases temporelles
         // Allume la LED en mode vol
-        setFlasher(FLASH_VOL);
+        if (flash_vol_on) {
+          setFlasher(FLASH_VOL);
+        } else {
+          // Au cas ou le flash serait en mode déverrouillage
+          if (flash_verrou) {
+            setFlasher(FLASH_OFF);
+          }
+        }
         timerStatus = STATUS_LARGUE;
         webSocketSend("STATUS", getStatusText(timerStatus));
         #ifdef DEBUG
@@ -268,7 +285,9 @@ void loop() {
           setServoPos(i, POSITION_DEVERROUILLE);
         }
         // Allume la LED en mode déverrouillage
-        setFlasher(FLASH_DEVERROUILLAGE);
+        if (flash_verrou) {
+          setFlasher(FLASH_DEVERROUILLAGE);
+        }
         timerStatus = STATUS_DEVERROUILLE;
         webSocketSend("STATUS", getStatusText(timerStatus));
         #ifdef DEBUG

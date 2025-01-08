@@ -22,10 +22,12 @@
 #ifndef flash_h
   #define flash_h
 
-  #define ON_TIME    35 //  35 milliseconds
-  #define OFF_TIME   25 //  25 milliseconds
-  #define T_CYCLE  2000 //   2 secondes
-  #define N_FLASH     5 // Number of flash by cycles
+  #define DEFAULT_FLASH_VERROU    1 // true
+  #define DEFAULT_FLASH_VOL_ON    1 // true
+  #define DEFAULT_ON_TIME        35 //  35 milliseconds
+  #define DEFAULT_OFF_TIME       25 //  25 milliseconds
+  #define DEFAULT_T_CYCLE      2000 //   2 secondes
+  #define DEFAULT_N_FLASH         3 // Number of flash by cycles
 
   enum flashMode {
     FLASH_OFF,            // 0 Flasher éteint
@@ -36,5 +38,6 @@
 
   void setFlasher(flashMode mode);
   void flasherLoop(void);
-  
+  bool isFlashEnCours(void);
+
 #endif

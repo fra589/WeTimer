@@ -267,7 +267,7 @@ async function XMLHttpRequest_post(requette) {
     xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhttp.send(toSend);
 
-  } else if (requette == "/testflasher") {
+  } else if ((requette == "/testflasher") || (requette == "/setflashdata")) {
     //------------------------------------------------------------------
     var test_vol    = document.getElementById("btn_test_vol").classList.contains("on");
     var test_verrou = document.getElementById("btn_test_verrou").classList.contains("on");
@@ -278,11 +278,26 @@ async function XMLHttpRequest_post(requette) {
     } else {
       toSend = "mode=0";
     }
-    if ((test_verrou) || (test_vol)) {
+    if ((test_verrou) || (test_vol) || (requette == "/setflashdata")) {
       toSend += "&cycle=" + document.getElementById("cycleFlash").value;
       toSend += "&allume=" + document.getElementById("allumeFlash").value;
       toSend += "&eteind=" + document.getElementById("eteintFlash").value;
       toSend += "&nombre=" + document.getElementById("nbFlash").value;
+    }
+      // Ajoute les paramètres on / off
+    if (requette == "/setflashdata") {
+      var flash_verrou = document.getElementById("btn_flash_verrou").classList.contains("on");
+      if (flash_verrou) {
+        toSend += "&flash_verrou=1"
+      } else {
+        toSend += "&flash_verrou=0"
+      }
+      var flash_vol_on = document.getElementById("btn_flash_vol").classList.contains("on");
+      if (flash_vol_on) {
+        toSend += "&flash_vol_on=1"
+      } else {
+        toSend += "&flash_vol_on=0"
+      }
     }
     // Poste la requette
     xhttp.open("POST", postURI, true);
@@ -322,6 +337,10 @@ function XMLHttpResult(requette, xml, text) {
         break;
       case "/getjson":
         ;
+        break;
+      case "/resetflashdata":
+      case "/getflashdata":
+        updateFlashData(xml);
         break;
       case "/uploadconfig":
         result = unescapeXML(xml.getElementsByTagName("uploadconfig")[0].innerHTML);
@@ -1280,10 +1299,53 @@ function doNothing() {
 }
 function ConfigFlasher() {
   // Récupère les données du flasher
-  alert("Récupération des données à faire.");
+  XMLHttpRequest_get("/getflashdata");
+  
   // Affichage de la boite de dialogue
   document.getElementById("input_flasher").classList.remove("noshow");
   document.getElementById("dialog_mask").classList.remove("noshow");
+}
+function updateFlashData(xml) {
+  // Mise à jour des éléments de config flash
+  // en résultat de la requette XMLHttpRequest_get("/getflashdata");
+  var flash_verrou = xml.getElementsByTagName("flash_verrou")[0].innerHTML;
+  var btn_on_off = document.getElementById("btn_flash_verrou");
+  if (flash_verrou == 0) { // off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    document.getElementById("flash_status_verrou").innerText = "Flash déverrouillage inactif";
+  } else {
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    document.getElementById("flash_status_verrou").innerText = "Flash déverrouillage actif";
+  }
+  var flash_vol_on = xml.getElementsByTagName("flash_vol_on")[0].innerHTML;
+  var btn_on_off = document.getElementById("btn_flash_vol");
+  if (flash_vol_on == 0) { // off
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    document.getElementById("flash_status_vol").innerText = "Flash vol inactif";
+  } else {
+    btn_on_off.classList.remove("off");
+    btn_on_off.classList.add("on");
+    btn_on_off.src = "images/btnon.svg";
+    document.getElementById("flash_status_vol").innerText = "Flash vol actif";
+  }
+  var tOn = xml.getElementsByTagName("tOn")[0].innerHTML;
+  document.getElementById("allumeFlash").value = Number(tOn);
+  document.getElementById('val_allume_flash').innerHTML = tOn + "&nbsp;ms";
+  var tOff = xml.getElementsByTagName("tOff")[0].innerHTML;
+  document.getElementById("eteintFlash").value = Number(tOff);
+  document.getElementById('val_eteint_flash').innerHTML = tOff + "&nbsp;ms";
+  var tCycle = xml.getElementsByTagName("tCycle")[0].innerHTML;
+  document.getElementById("cycleFlash").value  =  Number(tCycle);
+  document.getElementById('val_cycle_flash').innerHTML = tCycle + "&nbsp;s";
+  var nFlash = xml.getElementsByTagName("nFlash")[0].innerHTML;
+  document.getElementById("nbFlash").value     =  Number(nFlash);
+  document.getElementById('val_nb_flash').innerHTML = nFlash;
 }
 function toogleFlashVol() {
   var btn_on_off = document.getElementById("btn_flash_vol");
@@ -1318,7 +1380,18 @@ function toogleFlashVerrou() {
   }
 }
 function updateFlasher() {
-  alert("Développement en cours");
+  // Arrête si test en cours
+  stopFlashTest();
+  // Envoie les nouvelles données à la minuterie
+  XMLHttpRequest_post("/setflashdata");
+  // Masque la boite de dialogue
+  dialogHide();
+}
+function cancelFlasher() {
+  // Arrête si test en cours
+  stopFlashTest();
+  // Réinitialise les données depuis la minuterie
+  XMLHttpRequest_get("/resetflashdata");
   // Masque la boite de dialogue
   dialogHide();
 }
@@ -1342,17 +1415,23 @@ function flashDefault() {
   document.getElementById('val_allume_flash').innerHTML = "35&nbsp;ms";
   document.getElementById("eteintFlash").value = 25;
   document.getElementById('val_eteint_flash').innerHTML = "25&nbsp;ms";
-  document.getElementById("nbFlash").value     =  5;
-  document.getElementById('val_nb_flash').innerHTML = 5;
-  // Boutons de tests
+  document.getElementById("nbFlash").value     =  3;
+  document.getElementById('val_nb_flash').innerHTML = 3;
+  // Force test off & arret test si actif
   btn_on_off = document.getElementById("btn_test_vol");
-  btn_on_off.classList.remove("on");
-  btn_on_off.classList.add("off");
-  btn_on_off.src = "images/btnoff.svg";
+  if (btn_on_off.classList.contains("on")) {
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    XMLHttpRequest_post("/testflasher");
+  }
   btn_on_off = document.getElementById("btn_test_verrou");
-  btn_on_off.classList.remove("on");
-  btn_on_off.classList.add("off");
-  btn_on_off.src = "images/btnoff.svg";
+  if (btn_on_off.classList.contains("on")) {
+    btn_on_off.classList.remove("on");
+    btn_on_off.classList.add("off");
+    btn_on_off.src = "images/btnoff.svg";
+    XMLHttpRequest_post("/testflasher");
+  }
 }
 function toggleTestVol() {
   var btn_on_off = document.getElementById("btn_test_vol");
@@ -1421,6 +1500,7 @@ function stopFlashTest() {
   XMLHttpRequest_post("/testflasher");
 }
 function updateFlashValue(slider) {
+  // Update la valeur en fonction du slider concerné
   if (slider.id == "cycleFlash") {
     document.getElementById('val_cycle_flash').innerHTML = String(slider.value) + '&nbsp;s';
   } else if (slider.id == "allumeFlash") {
@@ -1431,6 +1511,7 @@ function updateFlashValue(slider) {
     document.getElementById('val_nb_flash').innerHTML = String(slider.value);
   }
   // Si un test est actif, on l'arrete et on le relance pour passer les nouvelles valeurs
+  // et voir le résultat en temps réel.
   if (document.getElementById("btn_test_vol").classList.contains("on")) {
     document.getElementById("btn_test_vol").classList.remove("on")
     XMLHttpRequest_post("/testflasher");

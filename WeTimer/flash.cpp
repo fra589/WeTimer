@@ -22,14 +22,9 @@
 #include "WeTimer.h"
 
 flashMode flashEnCours   = FLASH_OFF;
-unsigned long tOn        = ON_TIME;
-unsigned long tOff       = OFF_TIME;
-unsigned long tCycle     = T_CYCLE;
-unsigned long nFlash     = N_FLASH;
 unsigned long _tCycle    = tCycle;
 unsigned long nCycle     = 0;
 unsigned long debutCycle = 0;
-
 int debugCount = 0;
 
 void setFlasher(flashMode mode) {
@@ -46,7 +41,7 @@ void setFlasher(flashMode mode) {
       break;
     case FLASH_DEVERROUILLAGE:
       if (flashEnCours != FLASH_DEVERROUILLAGE) {
-        _tCycle = (N_FLASH + 1) * (ON_TIME + OFF_TIME);
+        _tCycle = (nFlash + 1) * (tOn + tOff);
         nCycle = 0;
         debutCycle   = millis();
       }
@@ -67,7 +62,7 @@ void flasherLoop(void) {
   // nCycle == 1 :
   // Entre debutCycle + tOn + tOff et debutCycle + tOn + tOff + tOn, la led doit être allumée
   // Entre debutCycle + tOn + tOff + tOn et debutCycle + tOn + tOff + tOn + tOff, la led doit être éteinte
-  // => jusqu'à N_FLASH
+  // => jusqu'à nFlash
   // Ensuite, on reste éteint jusqu'à _tCycle
   if ((flashEnCours == FLASH_DEVERROUILLAGE) || (flashEnCours == FLASH_VOL)) {
     unsigned long now    = millis();
@@ -98,6 +93,7 @@ void flasherLoop(void) {
   }
 }
 
-
-
+bool isFlashEnCours(void) {
+  return (flashEnCours != FLASH_OFF);
+}
 

@@ -398,28 +398,28 @@
             <div class="flex_flash_0"><image id="btn_flash_vol" class="flash_on_off on" src="images/btnon.svg" onclick="toogleFlashVol()"/></div>
           </div>
           <div class="flex_flash">
-            <div class="flex_flash_1">Durée du cycle flash</div>
+            <div class="flex_flash_1">Durée&nbsp;du&nbsp;cycle&nbsp;flash</div>
             <div class="flex_flash_1">
-              <input id="cycleFlash" class="slider" type="range" min="1" max="10" value="2" oninput="updateFlashValue(this);" />
+              <input id="cycleFlash" class="slider" type="range" min="1" max="60" value="2" oninput="updateFlashValue(this);" />
             </div>
             <div id="val_cycle_flash" class="val_flash">2&nbsp;s</div>
           </div>
           <div class="flex_flash">
-            <div class="flex_flash_1">Temps allumage LED</div>
+            <div class="flex_flash_1">Temps&nbsp;allumage&nbsp;LED</div>
             <div class="flex_flash_1">
               <input id="allumeFlash" class="slider" type="range" min="10" max="99" value="35" oninput="updateFlashValue(this);" />
             </div>
             <div id="val_allume_flash" class="val_flash">35&nbsp;ms</div>
           </div>
           <div class="flex_flash">
-            <div class="flex_flash_1">Temps extinction LED</div>
+            <div class="flex_flash_1">Temps&nbsp;extinction&nbsp;LED</div>
             <div class="flex_flash_1">
               <input id="eteintFlash" class="slider" type="range" min="10" max="99" value="25" oninput="updateFlashValue(this);" />
             </div>
             <div id="val_eteint_flash" class="val_flash">25&nbsp;ms</div>
           </div>
           <div class="flex_flash">
-            <div class="flex_flash_1">NB flash par cycle</div>
+            <div class="flex_flash_1">NB&nbsp;flash&nbsp;par&nbsp;cycle</div>
             <div class="flex_flash_1">
               <input id="nbFlash" class="slider" type="range" min="1" max="9" value="5" oninput="updateFlashValue(this);" />
             </div>
@@ -434,10 +434,11 @@
           </div>
           <div style="width: 100%">
             <br />
-            <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="flashDefault();"   value="Valeur par défaut" />
+            <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="flashDefault();"   value="Valeur défaut" />
+            <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="XMLHttpRequest_get('/resetflashdata');"   value="Relire" />
             <div class="boutonOKAnnuler" >
-              <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="stopFlashTest(); dialogHide();"     value="Annuler" />
-              <input type="button" id="btnValideFlash" class="btnOkAnnuler" tabindex="-1" onclick="stopFlashTest(); updateFlasher();" value="Valider" />
+              <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="cancelFlasher();"     value="Annuler" />
+              <input type="button" class="btnOkAnnuler" tabindex="-1" onclick="updateFlasher();" value="Valider" />
             </div>
           </div>
         </div> <!-- class="nomargin gauche" -->

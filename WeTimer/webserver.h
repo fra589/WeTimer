@@ -51,6 +51,9 @@
   void handleUpload(void);
   void handleSetApConfig(void);
   void handleSetDescription(void);
+  void handleGetFashData(void);
   void handleTestFlasher(void);
+  void handleResetFlashData(void);
+  void handleSetFashData(void);
 
 #endif
