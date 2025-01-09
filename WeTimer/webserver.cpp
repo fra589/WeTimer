@@ -867,8 +867,9 @@ void handleGetJson(void) {
   char j_delai[128];
   char j_pservo[256];
   String buffer;
-  char j_description[DESCRIPTION_LEN];
-  char JSON[576];
+  char j_description[DESCRIPTION_LEN]; // DESCRIPTION_LEN = 64
+  char j_flash[32];
+  char JSON[672];
   
   #ifdef DEBUG_WEB
     WT_PRINTF("Entrée dans handleGetJson()\n");
@@ -879,7 +880,9 @@ void handleGetJson(void) {
   // "version":"WeTimer-v2.0.20250106",
   // "cservo":"[[0,255,544,2400],[0,255,544,2400],[0,255,544,2400]]",
   // "delai":"[200,20,15,60,90,300,1000,18000,300,0]",
-  // "pservo":"[[100,100,100,150,170,130,120,30,90,95,10],[100,100,200,110,105,105,105,150,120,120,100],[100,150,100,150,100,100,100,100,120,120,120]]"
+  // "pservo":"[[100,100,100,150,170,130,120,30,90,95,10],[100,100,200,110,105,105,105,150,120,120,100],[100,150,100,150,100,100,100,100,120,120,120]]",
+  // "description":"&lt;La description...&gt;"
+  // "flash":"[1,1,2,35,25,3]"
   // }
   
   sprintf(j_version, "\"version\":\"[%s,%s]\",\n", APP_NAME, APP_VERSION_STRING);
@@ -899,7 +902,10 @@ void handleGetJson(void) {
   );
   buffer = escapeXML(String(description));
   sprintf(j_description, "\"description\":\"%s\"", buffer.c_str());
-  sprintf(JSON, "{\n%s%s%s%s%s\n}", j_version, j_cservo, j_delai, j_pservo, j_description);
+  sprintf(j_flash, "\"flash\":\"[%d,%d,%d,%d,%d,%d]\"", flash_verrou, flash_vol_on, tOn, tOff, tCycle / 1000, nFlash);
+
+  // Assemblage du JSON complet
+  sprintf(JSON, "{\n%s%s%s%s%s%s\n}", j_version, j_cservo, j_delai, j_pservo, j_description, j_flash);
 
   server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   server.sendHeader("Pragma", "no-cache");
@@ -936,6 +942,7 @@ void handleUpload(void) {
   // "delai":"[200,200,200,200,200,200,200,200,200,200]",
   // "pservo":"[[100,100,100,150,170,130,120,30,90,95,10],[100,100,200,110,105,105,105,150,120,120,100],[100,150,100,150,100,100,100,100,120,120,120]]",
   // "description":"&lt;La description...&gt;"
+  // "flash":"[1,1,2,35,25,3]"
   // }
   // Les données contiennent des tableaux JSON dans un document JSON. 
   // Il faut donc appeler deserializeJson() plusieurs fois.
@@ -1011,13 +1018,13 @@ void handleUpload(void) {
     if (!erreur) {
       const char* tableauDelai = doc["delai"];
       #ifdef DEBUG_WEB
-        WT_PRINTF("tableauDelai=%s\n", tableauDelai);
+        WT_PRINTF("tableauDelai = %s\n", tableauDelai);
       #endif
       // Deserialization tableau des délais
       error = deserializeJson(arr, tableauDelai);
       if (error) {
         #ifdef DEBUG_WEB
-          WT_PRINTF("handleSetConfig(): deserializeJson(tableauDelai) failed: %s\n", error.f_str());
+          WT_PRINTF("handleUpload(): deserializeJson(tableauDelai) failed: %s\n", error.f_str());
         #endif
         errorMessage = String(error.f_str());
         erreur = true;
@@ -1076,6 +1083,33 @@ void handleUpload(void) {
         WT_PRINTF("description=%s\n", description);
       #endif
     }
+
+    // Récupération de la configuration flasher
+    //--------------------------------------------------------------
+    if (!erreur) {
+      const char* tableauFlash = doc["flash"];
+      #ifdef DEBUG_WEB_2
+        WT_PRINTF("tableauFlash = %s\n", data);
+      #endif
+      // Deserialization tableau flash
+      error = deserializeJson(arr, tableauFlash);
+      if (error) {
+        #ifdef DEBUG_WEB
+          WT_PRINTF("handleUpload(): deserializeJson(tableauFlash) failed: %s\n", error.f_str());
+        #endif
+        errorMessage = String(error.f_str());
+        erreur = true;
+      } else {
+        // Récupération de la config flash
+        flash_verrou = arr[0];
+        flash_vol_on = arr[1];
+        tOn          = arr[2];
+        tOff         = arr[3];
+        tCycle       = arr[4];
+        nFlash       = arr[5];
+      }
+    }
+
   } else { // if (server.hasArg("plain"))
     errorMessage = "Pas de données";
     erreur = true;
@@ -1086,6 +1120,7 @@ void handleUpload(void) {
     updateEepromConf();
     updateEepromData();
     updateDescription();
+    updateFlashData();
     XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
     XML += F("<WeTimer>\n");
     XML += F("  <uploadconfig>OK</uploadconfig>\n");
@@ -1388,7 +1423,7 @@ void handleSetFashData(void) {
   // Même données que pour les tests
   handleTestFlasher();
   // Sauvegarde les données en EEPROM
-  updateEepromFlashData();
+  updateFlashData();
 }
 
 

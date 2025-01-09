@@ -285,7 +285,7 @@ void updateDescription(void) {
     #endif
   }
 }
-void updateEepromFlashData(void) {
+void updateFlashData(void) {
 
   char charTmp;
   unsigned long lTmp;

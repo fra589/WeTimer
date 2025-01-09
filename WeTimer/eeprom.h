@@ -51,7 +51,7 @@
   void getEepromFlashData(void);
   void updateEepromConf(void);
   void updateEepromData(void);
-  void updateEepromFlashData(void);
+  void updateFlashData(void);
   void updateDescription (void);
   void resetFactory(void);
   void EEPROM_format(void);
