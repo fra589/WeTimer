@@ -901,7 +901,7 @@ void handleGetJson(void) {
     pservo[2][0], pservo[2][1], pservo[2][2], pservo[2][3], pservo[2][4], pservo[2][5], pservo[2][6], pservo[2][7], pservo[2][8], pservo[2][9], pservo[2][10]
   );
   buffer = escapeXML(String(description));
-  sprintf(j_description, "\"description\":\"%s\"", buffer.c_str());
+  sprintf(j_description, "\"description\":\"%s\",\n", buffer.c_str());
   sprintf(j_flash, "\"flash\":\"[%d,%d,%d,%d,%d,%d]\"", flash_verrou, flash_vol_on, tOn, tOff, tCycle / 1000, nFlash);
 
   // Assemblage du JSON complet
@@ -926,6 +926,7 @@ void handleUpload(void) {
   String XML;
   StaticJsonDocument<1024> doc;
   StaticJsonDocument<1024> arr;
+  unsigned long tmpLong;
   DeserializationError error;
   String errorMessage = "erreur inconnue.";
   bool erreur = true; // Sera mis à false si OK
@@ -1105,7 +1106,8 @@ void handleUpload(void) {
         flash_vol_on = arr[1];
         tOn          = arr[2];
         tOff         = arr[3];
-        tCycle       = arr[4];
+        tmpLong      = arr[4];
+        tCycle       = tmpLong * 1000;
         nFlash       = arr[5];
       }
     }
