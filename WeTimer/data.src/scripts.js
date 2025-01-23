@@ -733,6 +733,7 @@ function positionOK() {
   celluleEnCours.innerText = nouvelleValeur;
   // Mise à jour du tableau de données
   var sNum   = Number(document.getElementById("sNum").innerText);
+  sNum = sNum - 1; // Affichage Servo 1 => pservo[0]...
   var pNum   = Number(document.getElementById("pNum").innerText);
   pServo[sNum][pNum] = nouvelleValeur;
   // Envoi des tableau de données à la minuterie

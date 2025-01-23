@@ -888,8 +888,8 @@ void handleGetJson(void) {
   sprintf(j_version, "\"version\":\"[%s,%s]\",\n", APP_NAME, APP_VERSION_STRING);
   sprintf(j_cservo, "\"cservo\":\"[[%d,%d,%d,%d],[%d,%d,%d,%d],[%d,%d,%d,%d]]\",\n",
     cservo[0][0], cservo[0][1], cservo[0][2], cservo[0][3],
-    cservo[0][0], cservo[0][1], cservo[0][2], cservo[0][3],
-    cservo[0][0], cservo[0][1], cservo[0][2], cservo[0][3]
+    cservo[1][0], cservo[1][1], cservo[1][2], cservo[1][3],
+    cservo[2][0], cservo[2][1], cservo[2][2], cservo[2][3]
   );
   sprintf(j_delai, "\"delai\":\"[%d,%d,%d,%d,%d,%d,%d,%d,%d,%d]\",\n",
     delai[0], delai[1], delai[2], delai[3], delai[4],
