@@ -1,5 +1,8 @@
 # Minuterie pour planeur de vol libre
 <!--<img align="left" width="80" height="80" src="https://github.com/fra589/WeTimer/blob/master/doc/images/WeTimer_logo.svg">-->
+<p>
+<img align="left" width="160" src="https://github.com/user-attachments/assets/872df7ed-3707-4356-96f7-7a71e1bc6638">
+
 Basée sur une carte microcontrôleur WiFi ESP8266 de type Wemos D1 mini (34mm x 26mm), disponible pour quelques euros, la minuterie WeTimer permet de commander deux servos en fonction des différentes phases de vol du planeur.
 
 L’un des servo permet de commander les mouvement du stabilisateur avec une position pendant la phase de treuillage, une position pendant la phase de vol et une dernière position lors du déthermalisage. L’autre servo permet 2 positions de dérive, l’une pendant le treuillage lorsque le câble est tendu (dérive dans l’axe), l’autre pendant le vol ou lorsque le câble est détendu.<br />
@@ -11,6 +14,9 @@ Cette connexion WiFi permet égalament d'activer la fonctionalité de déthermal
 <!--<p align="center">
 <img src="../master/doc/images/WeTimer_proto01_recto.jpg" width="36%" height="36%"> <img src="../master/doc/images/WeTimer_proto01_verso.jpg" width="36%" height="36%"> <img src="../master/doc/images/WeTimer_proto01_servo.jpg" width="20.3%" height="20.3%">
 </p>-->
+</p>
+<br />
+<hr />
 
 La notice d'utilisation de cette minuterie (version 1 (zoom)) est ici : [Notice WeTimer.pdf](https://github.com/fra589/WeTimer/blob/master/documentation/doc%20version%201/Notice%20WeTimer_v1.pdf)<br />
 La documentation d'installation logiciel et de programation de la carte microcontroleur est ici : [Installation WeTimer.pdf](https://github.com/fra589/WeTimer/blob/master/documentation/doc%20version%201/Installation%20WeTimer.pdf)
