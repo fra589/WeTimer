@@ -230,7 +230,8 @@ async function XMLHttpRequest_post(requette) {
       // Force le mode de test à val
       var mode = 0;
       // Données POST : mode, servonum, limit1, limit2, pwm1, pwm2, val
-      var sNum   = document.getElementById("sNum").innerText;
+      var sNum   = Number(document.getElementById("sNum").innerText);
+      sNum = sNum - 1;
       var limit1 = cServo[sNum][0];
       var limit2 = cServo[sNum][1];
       var pwm1   = cServo[sNum][2];

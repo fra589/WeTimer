@@ -48,20 +48,25 @@ void processSerial(void) {
     
     if ((strncmp(serialInput, "help", 4) == 0) || ((strlen(serialInput) == 1) && (serialInput[0] == '?'))) {
       //----------------------------------------------------------------
-      WT_PRINTF("reboot................... : Redémarre la minuterie\n");
-      WT_PRINTF("factory.................. : Restaure tous les paramètres d'usine\n");
-      WT_PRINTF("status................... : Renvoie le status en cours\n");
-      WT_PRINTF("cservo................... : Renvoie la configuration d'amplitude des servos\n");
-      WT_PRINTF("delai.................... : Renvoi la configuration des délais\n");
-      WT_PRINTF("pservo................... : Renvoi la configuration de position des servos\n");
-      WT_PRINTF("config................... : Renvoi toute la configuration de la minuterie\n");
-      WT_PRINTF("wifiscan................. : Liste les réseaux Wifi disponibles\n");
+      WT_PRINTF("reboot .................. : Redémarre la minuterie\n");
+      WT_PRINTF("factory ................. : Restaure tous les paramètres d'usine\n");
+      WT_PRINTF("status .................. : Renvoie le status en cours\n");
+      WT_PRINTF("cservo .................. : Renvoie la configuration d'amplitude des servos\n");
+      WT_PRINTF("delai ................... : Renvoi la configuration des délais\n");
+      WT_PRINTF("pservo .................. : Renvoi la configuration de position des servos\n");
+      WT_PRINTF("config .................. : Renvoi toute la configuration de la minuterie\n");
+      WT_PRINTF("wifiscan ................ : Liste les réseaux Wifi disponibles\n");
       WT_PRINTF("connect <SSID> <Password> : Connecte la minuterie au réseau \"SSID\"\n");
-      WT_PRINTF("wifisave................. : Sauvegarde le réseau Wifi actif en EEPROM\n");
-      WT_PRINTF("ls....................... : liste des fichiers LittleFS\n");
-      WT_PRINTF("boucle................... : affiche le temps d'exécution de la boucle loop()\n");
-      WT_PRINTF("millis................... : affiche le temps millis()\n");
-      WT_PRINTF("flash <0|1|2|3>.......... : Active le flash en mode <off|power|deverrouillage|vol>\n");
+      WT_PRINTF("wifisave ................ : Sauvegarde le réseau Wifi actif en EEPROM\n");
+      WT_PRINTF("ls ...................... : liste des fichiers LittleFS\n");
+      WT_PRINTF("boucle .................. : affiche le temps d'exécution de la boucle loop()\n");
+      WT_PRINTF("millis .................. : affiche le temps millis()\n");
+      WT_PRINTF("flash <0|1|2|3> ......... : Active le flash en mode <off|power|deverrouillé|vol>\n");
+      WT_PRINTF("Web services : getversion, getstatus, getconfig, setconfig,\n");
+      WT_PRINTF("               gettempvol, settempvol, getservoconfig, setservoconfig,\n");
+      WT_PRINTF("               servotest, servopos, getbatterie, rdt, getjson, uploadconfig,\n");
+      WT_PRINTF("               setapconfig, setdescription, getflashdata, testflasher, \n");
+      WT_PRINTF("               resetflashdata, setflashdata\n");
 
     } else if (strncmp(serialInput, "reboot", 6) == 0) {
       //----------------------------------------------------------------
@@ -245,16 +250,20 @@ void setServoPos(unsigned int servoNum, int servoPos) {
   // cservo[servoNum][2] position microseconds extrémité 1 
   // cservo[servoNum][3] position microseconds extrémité 2
 
-  #ifdef DEBUG_2
+  #ifdef DEBUG
     WT_PRINTF("Entrée dans setServoPos(%u, %u)\n", servoNum, servoPos);
   #endif
   
   if ((servoNum <0) || (servoNum >= NB_SERVOS)) {
-    WT_PRINTF("setServoPos(%u, %u) : ERREUR servoNum !!!", servoNum, servoPos);
+    #ifdef DEBUG
+      WT_PRINTF("setServoPos(%u, %u) : ERREUR servoNum !!!", servoNum, servoPos);
+    #endif
     return;
   }
   if ((servoPos <0) || (servoNum >= NB_POSITIONS)) {
-    WT_PRINTF("setServoPos(%u, %u) : ERREUR servoPos !!!", servoNum, servoPos);
+    #ifdef DEBUG
+      WT_PRINTF("setServoPos(%u, %u) : ERREUR servoPos !!!", servoNum, servoPos);
+    #endif
     return;
   }
   
