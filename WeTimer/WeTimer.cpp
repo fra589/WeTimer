@@ -342,7 +342,7 @@ void runDT(void) {
   timerStatus = STATUS_DT;
   webSocketSend("STATUS", getStatusText(timerStatus));
   #ifdef DEBUG
-    WT_PRINTF("runDT() : Passage au STATUS_DT\n");
+    WT_PRINTF("runDT() : Passage au STATUS_DT (T = %d)\n", temps.dt);
     Serial.flush();
   #endif
 }

@@ -229,6 +229,12 @@ void loop() {
         // sera le PITCHUP après le delai[1]
         temps.largage = millis();
         calculInstants(); // Calcul des phases temporelles
+        timerStatus = STATUS_LARGUE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_LARGUE (T = %d)\n", temps.largage);
+          Serial.flush();
+        #endif
         // Allume la LED en mode vol
         if (flash_vol_on) {
           setFlasher(FLASH_VOL);
@@ -238,12 +244,6 @@ void loop() {
             setFlasher(FLASH_OFF);
           }
         }
-        timerStatus = STATUS_LARGUE;
-        webSocketSend("STATUS", getStatusText(timerStatus));
-        #ifdef DEBUG
-          WT_PRINTF("Passage au STATUS_LARGUE\n");
-          Serial.flush();
-        #endif
       }  else if (timerStatus == STATUS_TREUIL_MONTEE) {
         // On positionne les servos en mode treuillage virage
         for (int i=0; i<NB_SERVOS; i++) {
@@ -307,9 +307,10 @@ void loop() {
   //--------------------------------------------------------------------
 
   if (timerStatus >= STATUS_LARGUE) {
+    unsigned long T = millis();
     switch (timerStatus) {
       case STATUS_LARGUE:
-        if (millis() >= temps.pitchup ) {
+        if (T >= temps.pitchup ) {
           // Déclenchement PITCHUP
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_PITCHUP);
@@ -317,13 +318,13 @@ void loop() {
           timerStatus = STATUS_PITCHUP;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_PITCHUP\n");
+            WT_PRINTF("Passage au STATUS_PITCHUP (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_PITCHUP:
-        if (millis() >= temps.montee1 ) {
+        if (T >= temps.montee1 ) {
           // Déclenchement MONTEE_1
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_MONTEE_1);
@@ -331,13 +332,13 @@ void loop() {
           timerStatus = STATUS_MONTEE_1;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_MONTEE_1\n");
+            WT_PRINTF("Passage au STATUS_MONTEE_1 (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_MONTEE_1:
-        if (millis() >= temps.montee2 ) {
+        if (T >= temps.montee2 ) {
           // Déclenchement MONTEE_2
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_MONTEE_2);
@@ -345,13 +346,13 @@ void loop() {
           timerStatus = STATUS_MONTEE_2;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_MONTEE_2\n");
+            WT_PRINTF("Passage au STATUS_MONTEE_2 (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_MONTEE_2:
-        if (millis() >= temps.bunt ) {
+        if (T >= temps.bunt ) {
           // Déclenchement BUNT
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_BUNT);
@@ -359,13 +360,13 @@ void loop() {
           timerStatus = STATUS_BUNT;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_BUNT\n");
+            WT_PRINTF("Passage au STATUS_BUNT (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_BUNT:
-        if (millis() >= temps.plane1 ) {
+        if (T >= temps.plane1 ) {
           // Déclenchement PLANE_1
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_PLANE_1);
@@ -373,13 +374,13 @@ void loop() {
           timerStatus = STATUS_PLANE_1;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_PLANE_1\n");
+            WT_PRINTF("Passage au STATUS_PLANE_1 (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_PLANE_1:
-        if (millis() >= temps.plane2 ) {
+        if (T >= temps.plane2 ) {
           // Déclenchement PLANE_2
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_PLANE_2);
@@ -387,19 +388,19 @@ void loop() {
           timerStatus = STATUS_PLANE_2;
           webSocketSend("STATUS", getStatusText(timerStatus));
           #ifdef DEBUG
-            WT_PRINTF("Passage au STATUS_PLANE_2\n");
+            WT_PRINTF("Passage au STATUS_PLANE_2 (T = %d)\n", T);
             Serial.flush();
           #endif
         }
         break;
       case STATUS_PLANE_2:
-        if (millis() >= temps.dt) {
+        if (T >= temps.dt) {
           // Déclenchement DT
           runDT();
         }
         break;
       case STATUS_DT:
-        if (millis() >= temps.parc ) {
+        if (T >= temps.parc ) {
           // Retour au status parc
           for (int i=0; i<NB_SERVOS; i++) {
             setServoPos(i, POSITION_PARC);
@@ -410,7 +411,7 @@ void loop() {
           // Eteint la LED
           setFlasher(FLASH_OFF);
           #ifdef DEBUG
-            WT_PRINTF("Retour au STATUS_PARC\n");
+            WT_PRINTF("Retour au STATUS_PARC (T = %d)\n", T);
             Serial.flush();
           #endif
         }
