@@ -284,16 +284,16 @@ void loop() {
         for (int i=0; i<NB_SERVOS; i++) {
           setServoPos(i, POSITION_DEVERROUILLE);
         }
-        // Allume la LED en mode déverrouillage
-        if (flash_verrou) {
-          setFlasher(FLASH_DEVERROUILLAGE);
-        }
         timerStatus = STATUS_DEVERROUILLE;
         webSocketSend("STATUS", getStatusText(timerStatus));
         #ifdef DEBUG
           WT_PRINTF("Passage au STATUS_DEVERROUILLE\n");
           Serial.flush();
         #endif
+        // Allume la LED en mode déverrouillage
+        if (flash_verrou) {
+          setFlasher(FLASH_DEVERROUILLAGE);
+        }
       }
     } else { // crochet[1] == SWITCH_OFF
       ; // A priori, rien a faire pour l'instant...

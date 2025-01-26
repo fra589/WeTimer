@@ -29,21 +29,24 @@ int debugCount = 0;
 
 void setFlasher(flashMode mode) {
   // Active le flash dans le mode demandé
-  WT_PRINTF("Entrée dans setFlasher(%d)\n", mode);
+  WT_PRINTF("Entrée dans setFlasher(%d)...", mode);
   switch (mode) {
     case FLASH_OFF:
       // Eteint le flasher
       digitalWrite(PIN_LED, LOW);
+      WT_PRINTF(" extinction flash.\n");
       break;
     case FLASH_POWER:
       // Allume le flasher de manière continue
       digitalWrite(PIN_LED, HIGH);
+      WT_PRINTF(" allumage flash.\n");
       break;
     case FLASH_DEVERROUILLAGE:
       if (flashEnCours != FLASH_DEVERROUILLAGE) {
         _tCycle = (nFlash + 1) * (tOn + tOff);
         nCycle = 0;
         debutCycle   = millis();
+        WT_PRINTF(" flash déverrouillage _tCycle = %d, nCycle = %d, debutCycle = %d.\n", _tCycle, nCycle, debutCycle);
       }
       break;
     case FLASH_VOL:
@@ -51,7 +54,9 @@ void setFlasher(flashMode mode) {
         _tCycle = tCycle;
         nCycle = 0;
         debutCycle   = millis();
+        WT_PRINTF(" flash vol _tCycle = %d, nCycle = %d, debutCycle = %d.\n", _tCycle, nCycle, debutCycle);
       }
+      break;
   }
   flashEnCours = mode;
 }
@@ -69,6 +74,7 @@ void flasherLoop(void) {
     unsigned long tFlash = now - debutCycle;
     unsigned long nextOn  = (nCycle * (tOn + tOff));
     unsigned long nextOff = (nCycle * (tOn + tOff) + tOn);
+    ////// WT_PRINTF(" flasherLoop() debutCycle = %d, now = %d, tFlash = %d, nextOn = %d, nextOff = %d, nCycle = %d.\n", debutCycle, now, tFlash, nextOn, nextOff, nCycle);
     if (nCycle <= nFlash) {
       if ((tFlash >= nextOn) && (tFlash < nextOff)) {
         if (digitalRead(PIN_LED) == LOW) {
@@ -76,12 +82,15 @@ void flasherLoop(void) {
           digitalWrite(PIN_LED, HIGH);
         }
       } else if ((tFlash >= nextOff) && (tFlash < (nextOff + tOff))) {
-          if (digitalRead(PIN_LED) == HIGH) {
-            // Eteint la LED
-            digitalWrite(PIN_LED, LOW);
-          }
-          // Passe au cycle suivant
-          nCycle++;
+        if (digitalRead(PIN_LED) == HIGH) {
+          // Eteint la LED
+          digitalWrite(PIN_LED, LOW);
+        }
+        // Passe au cycle suivant
+        nCycle++;
+      } else {
+        // Passe au cycle suivant
+        nCycle++;
       }
     } else {
       if (tFlash >= _tCycle) {
