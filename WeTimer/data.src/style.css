@@ -1,15 +1,15 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: style.css is part of WeTimer / WeDT                           */
+/* This file: style.css is part of WeTimer                                  */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -412,7 +412,6 @@ input[type=number] {
 #rdt_on_off:hover {
   filter: brightness(0.8);
   -webkit-filter: brightness(0.8);
-  /*-moz-filter: brightness(0.8);*/
   -o-filter: brightness(0.8);
   -ms-filter: brightness(0.8);
 }
@@ -427,7 +426,7 @@ input[type=number] {
       /* haut | droit | bas | gauche */
   margin: 7px 0 0 0;
 }
-#tsetup {
+#tsetup, #tcrochet {
   width: 100%;
   margin-top: 7px;
   /*margin-left: -7px;*/
@@ -437,7 +436,7 @@ input[type=number] {
   text-align: left;
   font-size: 3.8vw;
 }
-#tsetup thead {
+#tsetup thead, #tcrochet thead {
   font-weight: bold;
   text-align: center;
   height: 3em;
@@ -453,7 +452,7 @@ input[type=number] {
   background-color: rgba(224,238,238,0.6);
   background-blend-mode: lighten;
 }
-#tsetup td {
+#tsetup td, #tcrochet td {
   border: solid 1px;
   /*font-size: 0.95em;*/
 }
@@ -482,6 +481,9 @@ input[type=number] {
   background: #ceffce;
   padding-right: 0.25em;
   text-align: right;
+}
+.cellCrochet {
+  cursor: pointer;
 }
 .float_right {
   float: right;

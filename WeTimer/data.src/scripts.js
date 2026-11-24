@@ -1,15 +1,15 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: script.js is part of WeTimer / WeDT                           */
+/* This file: script.js is part of WeTimer                                  */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -20,22 +20,22 @@
 /****************************************************************************/
 
 // pour debug du developpement, adresse IP de la Wemos connectée au wifi :
-//var netIP     = '192.168.1.189'; // DomoPassaduy proto 1
-//var netIP     = '192.168.1.137'; // DomoPassaduy proto 
 //var netIP     = '10.10.10.10';
 var netIP     = 'wetimer.local';
 var netDevURL = 'http://' + netIP;
 
 var refreshTimeoutID = 0;
-var tblDelai = new Array(10);
-var pServo   = new Array(3);
+var tblDelai = new Array(11);
+var pServo   = new Array(4);
 pServo[0]    = new Array(11);
 pServo[1]    = new Array(11);
 pServo[2]    = new Array(11);
-var cServo   = new Array(3);
+pServo[3]    = new Array(11);
+var cServo   = new Array(4);
 cServo[0]    = new Array(4);
 cServo[1]    = new Array(4);
 cServo[2]    = new Array(4);
+cServo[3]    = new Array(4);
 var cServoOK = false;
 var testModeEnCours = 0;
 
@@ -82,7 +82,7 @@ async function index_onload() {
       pageEnCours = storedPage;
       if (pageEnCours == 2) {
         showSettings();
-      } 
+      }
     }
   }
 }
@@ -119,8 +119,8 @@ function index_ondblclick() {
 
   var fontSize = parseFloat(window.getComputedStyle(document.body).getPropertyValue('font-size'));
   var fontName = window.getComputedStyle(document.body).getPropertyValue('font-family');
-  var fSize2   = window.getComputedStyle(document.getElementById("description_page1", null)).getPropertyValue("font-size") 
-  var fSize3   = window.getComputedStyle(document.getElementById("tsetup", null)).getPropertyValue("font-size") 
+  var fSize2   = window.getComputedStyle(document.getElementById("description_page1", null)).getPropertyValue("font-size")
+  var fSize3   = window.getComputedStyle(document.getElementById("tsetup", null)).getPropertyValue("font-size")
   var message = "";
   message  = "Hauteur   = " + String(height);
   message += "\nLargeur   = " + String(width);
@@ -381,7 +381,7 @@ function updateVersion(xml) {
   getVersionOK = true;
 }
 function updateStatus(xml) {
-  
+
   var timer_status = document.getElementById("timer_status");
   status = xml.getElementsByTagName("status")[0].childNodes[0].nodeValue;
   timer_status.innerText = status;
@@ -452,7 +452,8 @@ function updateTempVol(xml) {
 function updateConfig(xml) {
   var table = document.getElementById("setup_table");
   var delais = xml.getElementsByTagName("delai");
-  if (delais.length != 10) {
+  if (delais.length != 11) {
+    alert(delais.length);
     document.location.reload(true);
   }
   for (const d of delais) {
@@ -461,7 +462,7 @@ function updateConfig(xml) {
     tblDelai[num] = val;
   }
   var pservo = xml.getElementsByTagName("pservo");
-  if (pservo.length != 33) {
+  if (pservo.length != 44) {
     document.location.reload(true);
   }
   for (const p of pservo) {
@@ -487,8 +488,9 @@ function updateConfig(xml) {
   #define  STATUS_PLANE_1       10 // STATUS_BUNT         + délai N°5                     // Position[8]
   #define  STATUS_PLANE_2       11 // STATUS_PLANE_1      + délai N°6                     // Position[9]
   #define  STATUS_DT            12 // STATUS_PLANE_2      + délai N°7                     // Position[10]
-  //retour STATUS_PARC           0 // STATUS_DT             + délai N°8 (= 5 secondes)      // Position[0]
-  // Délai N°9 = futur délai de refermeture pour crochet piloté par servo
+  //retour STATUS_PARC           0 // STATUS_DT           + délai N°8 (5 secondes ?)      // Position[0]
+  // Délai N° 9 = Délai d'ouverture crochet piloté par servo
+  // Délai N°10 = Délai de fermeture crochet piloté par servo
   */
   //       <tr><td>Phase</td><td>Délai</td><td>Cumul</td><td>Servo1</td><td>Servo2</td><td>Servo3</td></tr>
   buff += "<tr>"
@@ -613,6 +615,7 @@ function updateConfig(xml) {
   buff += "</tr>\n";
   // 1 ligne de plus prévue pour le délai d'ouverture de crochet
   // (option future
+  /*
   buff += "<tr>"
   buff += "  <td class='tdCol1 disabled'>Refermeture crochet</td>"
   buff += "  <td class='cellDelai disabled' id='delai_9' onclick=';'>" + (tblDelai[9] /100).toFixed(2) + "</td>"
@@ -621,14 +624,21 @@ function updateConfig(xml) {
   buff += "  <td>" + "&nbsp;"  + "</td>"
   buff += "  <td>" + "&nbsp;" + "</td>"
   buff += "</tr>\n";
+  */
 
   table.innerHTML = buff;
 
+  // Paramètres crochets
+  document.getElementById("delai_9").innerText = (tblDelai[9] /100).toFixed(2);
+  document.getElementById("servo_3_0").innerText = (pServo[3][0]);
+  document.getElementById("delai_10").innerText = (tblDelai[10] /100).toFixed(2);
+  document.getElementById("servo_3_1").innerText = (pServo[3][1]);
+
 }
 function updateServoConfig(xml) {
-  
+
   var cservo = xml.getElementsByTagName("cservo")
-  if (cservo.length != 12) {
+  if (cservo.length != 16) {
     document.location.reload(true);
   }
   for (const c of cservo) {
@@ -693,7 +703,15 @@ async function adjustServo(td) {
   // Titre de la boite de dialogue
   var sNum        = Number(arg[1]);
   var numPosition = Number(arg[2]);
-  var nomPosition = document.getElementById("posName_" + String(numPosition)).innerText
+  if (sNum < 3) {
+    var nomPosition = document.getElementById("posName_" + String(numPosition)).innerText
+  } else {
+    if (numPosition == 0) {
+      var nomPosition = "Crochet ouvert";
+    } else {
+      var nomPosition = "Crochet fermé";
+    }
+  }
   var sNumAffiche = sNum + 1;
   document.getElementById("input_position_title").innerHTML = "servo<span id='sNum'>" + sNumAffiche + "</span><br /><span class='nobold'>Position[<span id='pNum'>" + numPosition + "</span>] " + nomPosition + "</span>";
   // Retrouve la plage de réglage du servo
@@ -715,10 +733,10 @@ async function adjustServo(td) {
   // Affichage limites de réglage à coté du slider
   document.getElementById("posLimit1").innerText = cServo[sNum][0];
   document.getElementById("posLimit2").innerText = cServo[sNum][1];
-  
+
   // Positionne le servo à la valeur en cours
   XMLHttpRequest_post("/servopos");
-  
+
   // Affichage de la boite de dialogue
   dialog_mask = document.getElementById("dialog_mask");
   input_position = document.getElementById("input_position");
@@ -740,7 +758,7 @@ function positionOK() {
   // Envoi des tableau de données à la minuterie
   XMLHttpRequest_post("/setconfig");
   // Fermeture de la boite de dialogue
-  dialogHide();  
+  dialogHide();
 }
 function showPosRangeVal(valeur) {
   // Mise à jour de l'input de position du servo en fonction du slider
@@ -983,7 +1001,7 @@ function beginChange(inputID, increment) {
     changeTimeoutID = null;
   }
   changeTimeoutID = setTimeout(function() {
-    change(inputID, increment); 
+    change(inputID, increment);
   }, 500);
 }
 function change(inputID, increment) {
@@ -1087,7 +1105,7 @@ function ws_onclose() {
 function ws_onmessage(e_msg) {
   e_msg = e_msg || window.event; // MessageEvent
   const obj = JSON.parse(e_msg.data);
-  
+
   switch (obj.key) {
     case "STATUS":
       status = obj.value;
@@ -1125,7 +1143,7 @@ function ws_onmessage(e_msg) {
       }
       break;
   }
-  
+
 }
 function showMenu(event) {
   // Bascule la visibilité du menu
@@ -1308,7 +1326,7 @@ function doNothing() {
 function ConfigFlasher() {
   // Récupère les données du flasher
   XMLHttpRequest_get("/getflashdata");
-  
+
   // Affichage de la boite de dialogue
   document.getElementById("input_flasher").classList.remove("noshow");
   document.getElementById("dialog_mask").classList.remove("noshow");

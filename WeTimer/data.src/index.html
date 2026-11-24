@@ -2,16 +2,16 @@
 <!--
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: index.html is part of WeTimer / WeDT                          */
+/* This file: index.html is part of WeTimer                                 */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -145,6 +145,27 @@
               <!-- rempli par javascript: updateConfig() -->
             </tbody>
           </table>
+          <!--<br />-->
+          <table id="tcrochet">
+            <thead>
+              <tr>
+                <td>Crocher<br />treuillage</td><td>Délais</td><td class="tdServoHead" onclick="configServo(4);">Servo<br />crochet</td>
+              </tr>
+            </thead>
+            <tbody id="setup_crochet">
+              <!-- mis à jour par javascript: updateConfig() -->
+              <tr>
+                <td class="cellCrochet" onclick="XMLHttpRequest_get('ouvrecrochet');">Ouverture</td>
+                <td class="cellDelai" id="delai_9" onclick="inputDelai(this)">0</td>
+                <td class="cellServo" id="servo_3_0" onclick="adjustServo(this)">200</td>
+              </tr>
+              <tr>
+                <td class="cellCrochet" onclick="XMLHttpRequest_get('fermecrochet');">Fermeture</td>
+                <td class="cellDelai" id="delai_10" onclick="inputDelai(this)">0</td>
+                <td class="cellServo" id="servo_3_1" onclick="adjustServo(this)">50</td>
+              </tr>
+            </tbody>
+          </table>
           <input type="file" id="fileSelect" accept="application/json" onchange="fileSelected(this)" class="noshow" />
         </div> <!-- config_form -->
       </div> <!-- page_2 -->
@@ -152,7 +173,7 @@
     <!------------------------------------------------------------------------------------------------>
     <div id="pied_page" ondblclick="index_ondblclick()">
       <p>
-        Minuterie WiFi WeTimer - <span id="pversion2">&nbsp;</span><br />Copyright &copy; 2021-2024 - Gauthier Brière
+        Minuterie WiFi WeTimer - <span id="pversion2">&nbsp;</span><br />Copyright &copy; 2021-2026 - Gauthier Brière
       </p>
     </div> <!-- pied_page -->
     <!------------------------------------------------------------------------------------------------>
