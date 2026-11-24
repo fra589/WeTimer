@@ -1,15 +1,15 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: eeprom.cpp is part of WeTimer / WeDT                          */
+/* This file: eeprom.cpp is part of WeTimer                                 */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -30,6 +30,7 @@ void getEepromStartupData(void) {
   int conf_address = ADDR_CONF_SERVOS;
   
   #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans getEepromStartupData()\n");
     bool default_value;
   #endif
   
@@ -95,7 +96,7 @@ void getEepromStartupData(void) {
       }
     }
   } // Fin lecture configurations servos
-  { // Lecture des positions
+  { // Lecture des délais et positions
     for (int i=0; i<NB_DELAI; i++, data_address += sizeof(int)) {
       EEPROM.get(data_address, dTmp);
       if (dTmp != 0xFFFFFFFF) {
@@ -122,7 +123,7 @@ void getEepromStartupData(void) {
           #endif
         }
         #ifdef DEBUG_EEPROM
-          WT_PRINTF("data_address = %d - pservo[%d][%d] = %d%s\n", data_address, i, j , pservo[i][j], default_value?" (default)":"");
+          WT_PRINTF("data_address = %d - valeur lue = 0x%02X - pservo[%d][%d] = %d%s\n", data_address, dTmp, i, j , pservo[i][j], default_value?" (default)":"");
         #endif
       }
     }
@@ -148,7 +149,11 @@ void getEepromFlashData(void) {
 
   char charTmp;
   unsigned long lTmp;
-  
+
+  #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans getEepromFlashData()\n");
+  #endif
+
   charTmp = char(EEPROM.read(ADDR_FLASH_VERROU));
   if (charTmp != 0xFF) {
     #ifdef DEBUG_EEPROM
@@ -210,6 +215,10 @@ void updateEepromConf(void) {
   int dTmp;
   bool dataUpdated = false;
 
+  #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans updateEepromConf()\n");
+  #endif
+
   for (int i=0; i<NB_SERVOS; i++, conf_address += sizeof(int)) {
     for (int j=0; j<NB_CONFIG; j++, conf_address += sizeof(int)) {
       EEPROM.get(conf_address, dTmp);
@@ -225,17 +234,23 @@ void updateEepromConf(void) {
 
   if (dataUpdated) {
     // Valide l'enregistrement si une donnée à changé.
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("updateEepromConf() : Commit de l'EEPROM\n");
+    #endif
     EEPROM.commit();
   }
 
 }
-
 void updateEepromData(void) {
 
   int data_address = ADDR_DATA;
   int dTmp;
   bool dataUpdated = false;
-  
+
+  #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans updateEepromData()\n");
+  #endif
+
   for (int i=0; i<NB_DELAI; i++, data_address += sizeof(int)) {
     EEPROM.get(data_address, dTmp);
     if (dTmp != delai[i]) {
@@ -261,6 +276,9 @@ void updateEepromData(void) {
 
   if (dataUpdated) {
     // Valide l'enregistrement si une donnée à changé.
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("updateEepromData() : Commit de l'EEPROM\n");
+    #endif
     EEPROM.commit();
   }
 
@@ -268,6 +286,11 @@ void updateEepromData(void) {
 void updateDescription(void) {
   char charTmp;
   char oldDescription[DESCRIPTION_LEN];
+
+  #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans updateDescription()\n");
+  #endif
+
   // Lecture de la description déjà dans l'EEPROM
   charTmp = char(EEPROM.read(ADDR_DESCRIPTION));
   if (charTmp != 0xFF) {
@@ -281,7 +304,7 @@ void updateDescription(void) {
     EEPROM_writeStr(ADDR_DESCRIPTION, description, DESCRIPTION_LEN);
     EEPROM.commit();
     #ifdef DEBUG_EEPROM
-      WT_PRINTF("Description enregistrée = %s\n", description);
+      WT_PRINTF("updateDescription() : Description enregistrée = %s\n", description);
     #endif
   }
 }
@@ -290,7 +313,11 @@ void updateFlashData(void) {
   char charTmp;
   unsigned long lTmp;
   bool dataUpdated = false;
-  
+
+  #ifdef DEBUG_EEPROM
+    WT_PRINTF("Entrée dans updateFlashData()\n");
+  #endif
+
   charTmp = char(EEPROM.read(ADDR_FLASH_VERROU));
   if (charTmp != flash_verrou) {
     EEPROM.write(ADDR_FLASH_VERROU, (char)flash_verrou);
@@ -323,6 +350,9 @@ void updateFlashData(void) {
   }
   if (dataUpdated) {
     // Valide l'enregistrement si une donnée à changé.
+    #ifdef DEBUG_EEPROM
+      WT_PRINTF("updateFlashData() : Commit de l'EEPROM\n");
+    #endif
     EEPROM.commit();
   }
 }
@@ -343,14 +373,13 @@ void resetFactory(void) {
   EEPROM_format(); // On efface tout
 
 }
-
 void EEPROM_format(void) {
   // Efface tout le contenu de l'EEPROM
-  
+
   #ifdef DEBUG_EEPROM
-    WT_PRINTF("  EEPROM_format()\n");
+    WT_PRINTF("Entrée dans EEPROM_format()\n");
   #endif
-  
+
   for ( int i = 0 ; i < EEPROM_LENGTH ; i++ ) {
     EEPROM.write(i, 0xFF);
   }
@@ -358,12 +387,11 @@ void EEPROM_format(void) {
   EEPROM.commit();
   
 }
-
 void EEPROM_writeStr(int address, char *value, int len) {
   // Write string char to eeprom
   
   #ifdef DEBUG_EEPROM
-    WT_PRINTF("  EEPROM_writeStr(%d, \"%s\", %d)\n", address, value, len);
+    WT_PRINTF("Entrée dans EEPROM_writeStr(%d, \"%s\", %d)\n", address, value, len);
   #endif
   
   for (int i=0; i<len; i++) {

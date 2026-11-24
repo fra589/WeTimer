@@ -830,6 +830,12 @@ function inputDelai(td) {
     case 8:
       document.getElementById("input_delai_title").innerText = "Délai retour parc";
       break;
+    case 9:
+      document.getElementById("input_delai_title").innerText = "Délai ouverture crochet";
+      break;
+    case 10:
+      document.getElementById("input_delai_title").innerText = "Délai fermeture crochet";
+      break;
   }
   // Affichage de la boite de dialogue
   dialog_mask = document.getElementById("dialog_mask");

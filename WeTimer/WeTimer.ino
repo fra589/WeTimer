@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
 /* This file: WeTimer.ino is part of WeTimer                                */
 /*                                                                          */
@@ -52,28 +52,32 @@ int pservo[NB_SERVOS][NB_POSITIONS]; // positions des servos
 
 int timerStatus    = STATUS_PARC;
 int timerOldStatus = timerStatus;
+int crochetStatus  = CROCHET_OUVERT;
 struct temps temps = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 unsigned long timeArmement = 0;
 uint8_t crochet[2] = {SWITCH_OFF, SWITCH_OFF};
 volatile bool recuExternRDT = false;
 char serialInput[SERIAL_BUFF_LEN]; // Incoming Serial data
-int serialPointer = 0;             // last character counter of Serial data
+unsigned int serialPointer = 0;    // last character counter of Serial data
 bool serialComplete = false;       // whether the string is complete
 unsigned long dureeBoucle = 0;
 unsigned long bouclePrecedente;
 
-bool flash_verrou        = DEFAULT_FLASH_VERROU;
-bool flash_vol_on        = DEFAULT_FLASH_VOL_ON;
-unsigned long tOn        = DEFAULT_ON_TIME;
-unsigned long tOff       = DEFAULT_OFF_TIME;
-unsigned long tCycle     = DEFAULT_T_CYCLE;
-unsigned long nFlash     = DEFAULT_N_FLASH;
+bool flash_verrou        =  DEFAULT_FLASH_VERROU;
+bool flash_vol_on         = DEFAULT_FLASH_VOL_ON;
+unsigned long tOn         = DEFAULT_ON_TIME;
+unsigned long tOff        = DEFAULT_OFF_TIME;
+unsigned long tCycle      = DEFAULT_T_CYCLE;
+unsigned long nFlash      = DEFAULT_N_FLASH;
+unsigned long tStartOpen  = 0;
+unsigned long tStartClose = 0;
 
 //----------------------------------------------------------------------
 // Initialisation
 //----------------------------------------------------------------------
 void setup() {
 
+  int i, j;
   // Try pushing frequency to 160MHz.
   //bool update_cpu_freq = system_update_cpu_freq(160);
   // Set CPU frequency to 80MHz.
@@ -97,18 +101,54 @@ void setup() {
   pinMode(PIN_SWITCH_0, INPUT_PULLUP);
   pinMode(PIN_SWITCH_1, INPUT_PULLUP);
   pinMode(PIN_BATTERIE, INPUT);
+  #ifdef PIN_GND_SWITCH
+    pinMode(PIN_GND_SWITCH, OUTPUT);
+    digitalWrite(PIN_GND_SWITCH, LOW);
+  #endif
 
   attachInterrupt(digitalPinToInterrupt(PIN_RDT), externRDT, FALLING);
 
-  pinMode(PIN_SERVO_0, OUTPUT); digitalWrite(PIN_SERVO_0, LOW);
-  pinMode(PIN_SERVO_1, OUTPUT); digitalWrite(PIN_SERVO_1, LOW);
-  pinMode(PIN_SERVO_2, OUTPUT); digitalWrite(PIN_SERVO_2, LOW);
+  int servoPins[NB_SERVOS] = {PIN_SERVO_0, PIN_SERVO_1, PIN_SERVO_2, PIN_SERVO_3};
+  for (i=0; i<NB_SERVOS; i++) {
+    pinMode(servoPins[i], OUTPUT);
+    digitalWrite(servoPins[i], LOW);
+  }
 
   // Initialisation données de la minuterie par défaut
   defaultInit();
   // Récupération des paramètres EEPROM
   getEepromStartupData();
-  
+
+  // Retrouve les amplitudes extreme des servos
+  int minmax[NB_SERVOS][2];
+  int indicemin;
+  int indicemax;
+  for (i=0; i<NB_SERVOS; i++) {
+    if (i != SERVO_CROCHET) {
+      // initialise les valeurs mini/maxi à la première valeur,
+      // Le tableau minmax contien les indice des positions dans le tableau pservo
+      indicemin = 0; // mini
+      indicemax = 0; // maxi
+      for (j=1; j<NB_POSITIONS; j++) {
+        if (pservo[i][j] < pservo[i][indicemin]) {
+          indicemin = j;
+        }
+        if (pservo[i][j] > pservo[i][indicemax]) {
+          indicemax = j;
+        }
+      }
+      minmax[i][0] = indicemin;
+      minmax[i][1] = indicemax;
+    }
+  }
+  minmax[SERVO_CROCHET][0] = 0;
+  minmax[SERVO_CROCHET][1] = 1;
+  #ifdef DEBUG
+    for (i=0; i<NB_SERVOS; i++) {
+      WT_PRINTF("setup() : amplitudes extreme Servo[%d] - min = %d; max = %d - pmin = %d pmax = %d\n", i, minmax[i][0], minmax[i][1], pservo[i][(minmax[i][0])], pservo[i][(minmax[i][1])]);
+    }
+  #endif
+
   // Connection cliente acces point si SSID défini
   wifiClientInit();
 
@@ -122,22 +162,38 @@ void setup() {
   webSocketInit();
   // Serveur Telnet;
   telnetInit();
+  
   // Initialisation des servos
-  setServoPos(0, POSITION_PARC);
-  servo[0].attach(PIN_SERVO_0, cservo[0][2], cservo[0][3]);
+  // Envoi la positions extrèmes mini programmée
+  for (i=0; i<NB_SERVOS; i++) {
+    if (i != SERVO_CROCHET) {
+      setServoPos(i, minmax[i][0]);
+      servo[i].attach(servoPins[i], cservo[i][2], cservo[i][3]);
+    }
+  }
+  ouvreCrochet();
+  servo[SERVO_CROCHET].attach(servoPins[SERVO_CROCHET], cservo[SERVO_CROCHET][2], cservo[SERVO_CROCHET][3]);
+  delay(500);
+  // Envoi la positions extrèmes maxi programmée
+  for (i=0; i<NB_SERVOS; i++) {
+    if (i != SERVO_CROCHET) {
+      setServoPos(i, minmax[i][1]);
+    }
+  }
+  fermeCrochet();
+  delay(500);
+  // Envoi la position parc
+  for (i=0; i<NB_SERVOS; i++) {
+    if (i != SERVO_CROCHET) {
+      setServoPos(i, POSITION_PARC);
+      #ifdef DEBUG
+        WT_PRINTF("setup() : Position initiale Servo[%d] en position parc (%d)\n", i, pservo[i][0]);
+      #endif
+    }
+  }
+  ouvreCrochet();
   #ifdef DEBUG
-    WT_PRINTF("setup() : Position initiale Servo[0] en position parc (%d)\n", pservo[0][0]);
-  #endif
-
-  setServoPos(1, POSITION_PARC);
-  servo[1].attach(PIN_SERVO_1, cservo[1][2], cservo[1][3]);
-  #ifdef DEBUG
-    WT_PRINTF("setup() : Position initiale Servo[1] en position parc (%d)\n", pservo[1][0]);
-  #endif
-  setServoPos(2, POSITION_PARC);
-  servo[2].attach(PIN_SERVO_2, cservo[2][2], cservo[2][3]);
-  #ifdef DEBUG
-    WT_PRINTF("setup() : Position initiale Servo[2] en position parc (%d)\n", pservo[2][0]);
+    WT_PRINTF("setup() : Position initiale Servo[%d] crochet ouvert (%d)\n", SERVO_CROCHET, pservo[SERVO_CROCHET][0]);
   #endif
 
 }
@@ -168,10 +224,14 @@ void loop() {
   if (timeArmement != 0) {
     unsigned long duree = millis() - timeArmement;
     if ((timerStatus == STATUS_ARMEMENT) && (crochet[0] == SWITCH_ON) && (duree > (delai[0] * 10))) {
+      #ifdef DEBUG
+        WT_PRINTF("Armement terminé, vérouillage crochet\n");
+      #endif
+      fermeCrochet();
       timerStatus = STATUS_TREUIL_MONTEE;
       webSocketSend("STATUS", getStatusText(timerStatus));
       #ifdef DEBUG
-        WT_PRINTF("Passage au STATUS_TREUIL_MONTEE\n");
+        WT_PRINTF("Armement terminé, Passage au STATUS_TREUIL_MONTEE\n");
         WT_PRINTF("timeArmement = %d, millis() = %d, delai[0] * 10 = %d\n", timeArmement, millis(), delai[0] * 10);
         Serial.flush();
       #endif
@@ -192,13 +252,12 @@ void loop() {
     if (crochet[0] == SWITCH_ON) {
       // Crochet en position avant : câble tendu.
       // On positionne les servos en mode treuillage montée
-      for (int i=0; i<NB_SERVOS; i++) {
-        setServoPos(i, POSITION_TREUIL_MONTEE);
-      }
       if ((timerStatus == STATUS_PARC) || (timerStatus == STATUS_DT)) {
         // On était en PARC ou DT, on lance le compte de temps
         // d'armement de la minuterie.
         timeArmement = millis();
+        // On force l'ouverture crochet
+        ouvreCrochet();
         // Mémorise l'ancien status (PARC ou DT) pour y revenir en cas
         // de non armement.
         timerOldStatus = timerStatus;
@@ -212,15 +271,20 @@ void loop() {
         #endif
       } else if (timerStatus == STATUS_TREUIL_VIRAGE) {
         timerStatus = STATUS_TREUIL_MONTEE;
+        for (int i=0; i<NB_SERVOS; i++) {
+          if (i != SERVO_CROCHET) {
+            setServoPos(i, POSITION_TREUIL_MONTEE);
+          }
+        }
         webSocketSend("STATUS", getStatusText(timerStatus));
         #ifdef DEBUG
           WT_PRINTF("Passage au STATUS_TREUIL_MONTEE\n");
           Serial.flush();
         #endif
-      }
+      } 
 
     } else { // crochet[0] == SWITCH_OFF
-      // Crochet en position arrière : câble détendu,
+      // Crochet en position arrière : câble détendu, crochet ouvert
       if (timerStatus == STATUS_DEVERROUILLE) {
         //--------------------------------------------------------------
         //                   Moment du largage !
@@ -247,7 +311,9 @@ void loop() {
       }  else if (timerStatus == STATUS_TREUIL_MONTEE) {
         // On positionne les servos en mode treuillage virage
         for (int i=0; i<NB_SERVOS; i++) {
-          setServoPos(i, POSITION_TREUIL_VIRAGE);
+          if (i != SERVO_CROCHET) {
+            setServoPos(i, POSITION_TREUIL_VIRAGE);
+          }
         }
         // Et on met à jour le status
         timerStatus = STATUS_TREUIL_VIRAGE;
@@ -270,19 +336,49 @@ void loop() {
     }
   } // (new_crochet[0] != crochet[0])
   
-  // Lecture switch crochet verouillage
+  // Lecture switch crochet largage
   //--------------------------------------------------------------------
   new_crochet[1] = digitalRead(PIN_SWITCH_1);
   if (new_crochet[1] != crochet[1]) {
+    // Le switch crochet largage a basculé
     crochet[1] = new_crochet[1];
     webSocketSend("SWITCH_1", String(new_crochet[1]));
 
     if (crochet[1] == SWITCH_ON) {
-      if ((timerStatus > STATUS_ARMEMENT) && (crochet[0] == SWITCH_ON)) {
-        // Switch largage activé => Déverouillage
+      if ((timerStatus > STATUS_ARMEMENT) && (crochet[0] == SWITCH_ON) && (timerStatus < STATUS_PRE_OUVERTURE)) {
+        // Switch largage activé => Déverouillage temporisé, on mémorise le temps
+        tStartOpen = millis() + 10 * delai[9];
+        timerStatus = STATUS_PRE_OUVERTURE;
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Passage au STATUS_PRE_OUVERTURE\n");
+          Serial.flush();
+        #endif
+      }
+    } else { // crochet[1] == SWITCH_OFF
+      tStartClose = millis() + 10 * delai[10];
+      // on doit attendre delai[10] pour refermer le crochet...
+    }
+  } // (new_crochet[1] != crochet[1])
+
+  //--------------------------------------------------------------------
+  // Ouverture du crochet 
+  //--------------------------------------------------------------------
+  if (timerStatus == STATUS_PRE_OUVERTURE) {
+    unsigned long T = millis();
+    if (crochet[1] == SWITCH_ON) {
+      if ((tStartOpen != 0) && (T > tStartOpen)) {
+        // ouverture crochet + POSITION_DEVERROUILLE
+        ouvreCrochet();
         // On positionne les servos en mode dÉVERROUILLÉ
         for (int i=0; i<NB_SERVOS; i++) {
-          setServoPos(i, POSITION_DEVERROUILLE);
+          if (i != SERVO_CROCHET) {
+            setServoPos(i, POSITION_DEVERROUILLE);
+          }
+        }
+        // Allume la LED en mode déverrouillage
+        if (flash_verrou) {
+          setFlasher(FLASH_DEVERROUILLAGE);
         }
         timerStatus = STATUS_DEVERROUILLE;
         webSocketSend("STATUS", getStatusText(timerStatus));
@@ -290,17 +386,65 @@ void loop() {
           WT_PRINTF("Passage au STATUS_DEVERROUILLE\n");
           Serial.flush();
         #endif
-        // Allume la LED en mode déverrouillage
-        if (flash_verrou) {
-          setFlasher(FLASH_DEVERROUILLAGE);
+      }
+    } else {
+      // Larguage abandonné avant ouverture
+      timerStatus = STATUS_TREUIL_MONTEE;
+      for (int i=0; i<NB_SERVOS; i++) {
+        if (i != SERVO_CROCHET) {
+          setServoPos(i, POSITION_TREUIL_MONTEE);
         }
       }
-    } else { // crochet[1] == SWITCH_OFF
-      ; // A priori, rien a faire pour l'instant...
-      // TODO C'est probablement ici qu'on traitera la refermeture
-      // d'un crochet piloté par servo
+      webSocketSend("STATUS", getStatusText(timerStatus));
+      #ifdef DEBUG
+        WT_PRINTF("Passage au STATUS_TREUIL_MONTEE\n");
+        Serial.flush();
+      #endif
     }
-  } // (new_crochet[1] != crochet[1])
+  }
+
+  //--------------------------------------------------------------------
+  // Refermeture du crochet
+  //--------------------------------------------------------------------
+  if ((timerStatus == STATUS_DEVERROUILLE) && (crochet[1] == SWITCH_OFF)){
+    // On a relâché la tension avant larguage
+    unsigned long T = millis();
+    if ((tStartClose != 0) && (T > tStartClose)){
+      // => fermeture du crochet après delai[10]
+      fermeCrochet();
+      // Retour au status treuil montée ou treuil virage
+      // en fonction de la position du crochet
+      if (crochet[0] == SWITCH_OFF) {
+        // Crochet en position arrière : câble détendu.
+        // On positionne les servos en mode treuil virage
+        timerStatus = STATUS_TREUIL_VIRAGE;
+        for (int i=0; i<NB_SERVOS; i++) {
+          if (i != SERVO_CROCHET) {
+            setServoPos(i, POSITION_TREUIL_VIRAGE);
+          }
+        }
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Retour au STATUS_TREUIL_VIRAGE\n");
+          Serial.flush();
+        #endif
+      } else {
+        // Crochet en position avant : câble tendu.
+        // On positionne les servos en mode treuillage montée
+        timerStatus = STATUS_TREUIL_MONTEE;
+        for (int i=0; i<NB_SERVOS; i++) {
+          if (i != SERVO_CROCHET) {
+            setServoPos(i, POSITION_TREUIL_MONTEE);
+          }
+        }
+        webSocketSend("STATUS", getStatusText(timerStatus));
+        #ifdef DEBUG
+          WT_PRINTF("Retour au STATUS_TREUIL_MONTEE\n");
+          Serial.flush();
+        #endif
+      }
+    }
+  }
 
   //--------------------------------------------------------------------
   //                 Séquence de vol après largage
@@ -313,7 +457,9 @@ void loop() {
         if (T >= temps.pitchup ) {
           // Déclenchement PITCHUP
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_PITCHUP);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_PITCHUP);
+            }
           }
           timerStatus = STATUS_PITCHUP;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -327,7 +473,9 @@ void loop() {
         if (T >= temps.montee1 ) {
           // Déclenchement MONTEE_1
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_MONTEE_1);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_MONTEE_1);
+            }
           }
           timerStatus = STATUS_MONTEE_1;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -341,7 +489,9 @@ void loop() {
         if (T >= temps.montee2 ) {
           // Déclenchement MONTEE_2
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_MONTEE_2);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_MONTEE_2);
+            }
           }
           timerStatus = STATUS_MONTEE_2;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -355,7 +505,9 @@ void loop() {
         if (T >= temps.bunt ) {
           // Déclenchement BUNT
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_BUNT);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_BUNT);
+            }
           }
           timerStatus = STATUS_BUNT;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -369,7 +521,9 @@ void loop() {
         if (T >= temps.plane1 ) {
           // Déclenchement PLANE_1
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_PLANE_1);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_PLANE_1);
+            }
           }
           timerStatus = STATUS_PLANE_1;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -383,7 +537,9 @@ void loop() {
         if (T >= temps.plane2 ) {
           // Déclenchement PLANE_2
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_PLANE_2);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_PLANE_2);
+            }
           }
           timerStatus = STATUS_PLANE_2;
           webSocketSend("STATUS", getStatusText(timerStatus));
@@ -403,8 +559,11 @@ void loop() {
         if (T >= temps.parc ) {
           // Retour au status parc
           for (int i=0; i<NB_SERVOS; i++) {
-            setServoPos(i, POSITION_PARC);
+            if (i != SERVO_CROCHET) {
+              setServoPos(i, POSITION_PARC);
+            }
           }
+          ouvreCrochet();
           timerStatus = STATUS_PARC;
           webSocketSend("STATUS", getStatusText(timerStatus));
           temps = (struct temps){ 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -444,8 +603,7 @@ void loop() {
   yield();
 
   //--------------------------------------------------------------------
-  // TODO: Transférer les entrées du port série
-  // vers un module interpréteur de commandes
+  // Transfère les entrées du port série vers l'interpréteur de commandes
   processSerial();
 
 }

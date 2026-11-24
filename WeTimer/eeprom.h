@@ -1,15 +1,15 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: eeprom.h is part of WeTimer / WeDT                            */
+/* This file: eeprom.h is part of WeTimer                                   */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -32,20 +32,21 @@
   #define ADDR_CLI_SSID        95 //  95 + 32 = 127
   #define ADDR_CLI_PWD        127 // 127 + 63 = 190
   // Configuration servos
-  #define ADDR_CONF_SERVOS    200 // 200 + 4*(3*4) = 200 + 48 = 248
+  #define ADDR_CONF_SERVOS    200 // 200 + 4*(4*4) = 200 + 64 = 264
+                                  // 4 bytes (int) x (4 servos x 4 valeurs)
   // Timing et positions
-  #define ADDR_DATA           256 // 256 + 4*(10+(3*11)) = 256 + 172 = 428 
-                                 // 4 bytes(int) x (10 délais + (3 servos x 11 positions))
-  // Configuration flash
-  #define ADDR_FLASH_VERROU   450 // 450 + 1 = 451
-  #define ADDR_FLASH_VOL_ON   451 // 451 + 1 = 452
-  #define ADDR_FLASH_ON_TIME  452 // 452 + 4 = 456
-  #define ADDR_FLASH_OFF_TIME 456 // 456 + 4 = 460
-  #define ADDR_FLASH_T_CYCLE  460 // 460 + 4 = 464
-  #define ADDR_FLASH_N_FLASH  464 // 464 + 4 = 468
+  #define ADDR_DATA           284 // 284 + 4*(11+(4*11)) = 284 + 216 = 504 
+                                  // 4 bytes(int) x (11 délais + (4 servos x 11 positions))
+  // Configuration flash (booleens)
+  #define ADDR_FLASH_VERROU   510 // 510 + 1 = 511
+  #define ADDR_FLASH_VOL_ON   511 // 511 + 1 = 522
+  #define ADDR_FLASH_ON_TIME  512 // 512 + 4 = 516
+  #define ADDR_FLASH_OFF_TIME 516 // 516 + 4 = 520
+  #define ADDR_FLASH_T_CYCLE  520 // 520 + 4 = 524
+  #define ADDR_FLASH_N_FLASH  524 // 524 + 4 = 528
 
   // Description de la config
-  #define ADDR_DESCRIPTION   512
+  #define ADDR_DESCRIPTION   532
   
   void getEepromStartupData(void);
   void getEepromFlashData(void);

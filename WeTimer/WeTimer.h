@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
 /* This file: WeTimer.h is part of WeTimer                                  */
 /*                                                                          */
@@ -57,11 +57,11 @@
                              telnet.printf((f_), ##__VA_ARGS__);
 
   #define ORG_NAME              "fra589"
-  #define COPYRIGHT             "G.Brière 2021-2025"
+  #define COPYRIGHT             "G.Brière 2021-2026"
   #define APP_NAME              "WeTimer"
-  #define APP_VERSION_MAJOR     "2"
+  #define APP_VERSION_MAJOR     "3"
   #define APP_VERSION_MINOR     "0"
-  #define APP_VERSION_DATE      "20250126"
+  #define APP_VERSION_DATE      "20261124"
   #define APP_VERSION_STRING    "v" APP_VERSION_MAJOR "." APP_VERSION_MINOR "." APP_VERSION_DATE
   #define APP_VERSION_VERIF     "[" APP_NAME ",v" APP_VERSION_MAJOR "." APP_VERSION_MINOR
   #define APP_NAME_VERSION      APP_NAME " - " APP_VERSION_STRING "\0"
@@ -69,16 +69,30 @@
   //----------------------------------------------------------------------------------------------------
   // Hardware mapping :
   //----------------------------------------------------------------------------------------------------
-  #define PIN_SCL      D1 // réservé I2C................ GPIO05 (futur accéléromètre ?)
-  #define PIN_SDA      D2 // réservé I2C................ GPIO04 (futur accéléromètre ?)
-  #define PIN_LED      D0 // LED externe................ GPIO16
-  #define PIN_SERVO_0  D8 // Servo Stab................. GPIO13 
-  #define PIN_SERVO_1  D7 // Servo Derive............... GPIO12
-  #define PIN_SERVO_2  D6 // Servo Aile droite.......... GPIO14 (ou futur crochet)
-  #define PIN_RDT      D5 // Signal RDT externe (BMK DT) GPIO15
-  #define PIN_SWITCH_0 D4 // Switch crochet avant....... GPIO2
-  #define PIN_SWITCH_1 D3 // Switch crochet largue...... GPIO0
+  #define PIN_LED      D0 // LED externe................ GPIO16 x
+  #define PIN_SERVO_0  D8 // Servo Stab................. GPIO13 x
+  #define PIN_SERVO_1  D7 // Servo Derive............... GPIO12 x
+  #define PIN_SERVO_2  D6 // Servo Aile................. GPIO14 x
+  #define PIN_SERVO_3  D2 // Servo Crochet.............. GPIO04 x
+  #define PIN_RDT      D5 // Signal RDT externe (BMK DT) GPIO15 x
+  #define PIN_SWITCH_0 D4 // Switch crochet avant....... GPIO2  x
+  #define PIN_SWITCH_1 D3 // Switch crochet largue...... GPIO0  x
   #define PIN_BATTERIE A0 // Conversion analogique mesure tension batterie
+  //----------------------------------------------------------------------------------------------------
+  // Hardware mapping pour dev :
+  //----------------------------------------------------------------------------------------------------
+  /*
+  #define PIN_LED        D0 // LED externe................ GPIO16
+  #define PIN_SERVO_0    D4 // Servo Stab................. GPIO2
+  #define PIN_SERVO_1    D1 // Servo Derive............... GPIO05
+  #define PIN_SERVO_2    D3 // Servo Aile................. GPIO0
+  #define PIN_SERVO_3    D2 // Servo Crochet.............. GPIO04
+  #define PIN_RDT        D5 // Signal RDT externe (BMK DT) GPIO15
+  #define PIN_SWITCH_0   D7 // Switch crochet avant....... GPIO12
+  #define PIN_SWITCH_1   D6 // Switch crochet largue...... GPIO14
+  #define PIN_GND_SWITCH D8 // Masse des 2 switchs
+  #define PIN_BATTERIE   A0 // Conversion analogique mesure tension batterie
+  */
 
   //----------------------------------------------------------------------------------------------------
   // Convertisseur analogique / numérique pour mesure tension batterie
@@ -106,21 +120,23 @@
   //----------------------------------------------------------------------------------------------------
   // Etats possibles de la minuterie
   //----------------------------------------------------------------------------------------------------
-  // Status :                      // Déclencheur :                                      // Servos :
-  #define STATUS_PARC           0 // Position au repos (DT +5 secondes) et à l'allumage // Position[0]
-  #define STATUS_ARMEMENT       1 // STATUS_PARC         + délai N°0 (délai armement)    // <No change>
-  #define STATUS_TREUIL_MONTEE  2 // STATUS_ARMEMENT     + SWITCH_1 = ON                 // Position[1]
-  #define STATUS_TREUIL_VIRAGE  3 // STATUS_ARMEMENT     + SWITCH_1 = OFF                // Position[2]
-  #define STATUS_DEVERROUILLE   4 // STATUS_ARMEMENT     + SWITCH_1 = ON + SWITCH_2 = ON // Position[3]
-  #define STATUS_LARGUE         5 // STATUS_DEVERROUILLE + SWITCH_1 = OFF                // <No change>
-  #define STATUS_PITCHUP        6 // STATUS_LARGUE       + délai N°1                     // Position[4]
-  #define STATUS_MONTEE_1       7 // STATUS_PITCHUP      + délai N°2                     // Position[5]
-  #define STATUS_MONTEE_2       8 // STATUS_MONTEE_1     + délai N°3                     // Position[6]
-  #define STATUS_BUNT           9 // STATUS_MONTEE_2     + délai N°4                     // Position[7]
-  #define STATUS_PLANE_1       10 // STATUS_BUNT         + délai N°5                     // Position[8]
-  #define STATUS_PLANE_2       11 // STATUS_PLANE_1      + délai N°6                     // Position[9]
-  #define STATUS_DT            12 // STATUS_PLANE_2      + délai N°7                     // Position[10]
-  //retour STATUS_PARC           0 // STATUS_DT            + délai N°8 (= 5 secondes)      // Position[0]
+  // Status :                      // Déclencheur :                                       // Servos :
+  #define STATUS_PARC            0 // Position au repos (DT +5 secondes) et à l'allumage   // Position[0]
+  #define STATUS_ARMEMENT        1 // STATUS_PARC          + délai N°0 (délai armement)    // <No change>
+  #define STATUS_TREUIL_MONTEE   2 // STATUS_ARMEMENT      + SWITCH_1 = ON                 // Position[1]
+  #define STATUS_TREUIL_VIRAGE   3 // STATUS_ARMEMENT      + SWITCH_1 = OFF                // Position[2]
+  #define STATUS_PRE_OUVERTURE   4 // STATUS_ARMEMENT      + SWITCH_1 = ON + SWITCH_2 = ON // <No change>
+  #define STATUS_DEVERROUILLE    5 // STATUS_PRE_OUVERTURE + délai N°9                     // Position[3] + ouverture crochet
+  // Retour STATUS_TREUIL_MONTEE 2 // STATUS_DEVERROUILLE  + délai N°10                    // Position[1]
+  #define STATUS_LARGUE          6 // STATUS_DEVERROUILLE  + SWITCH_1 = OFF                // <No change>
+  #define STATUS_PITCHUP         7 // STATUS_LARGUE        + délai N°1                     // Position[4]
+  #define STATUS_MONTEE_1        8 // STATUS_PITCHUP       + délai N°2                     // Position[5]
+  #define STATUS_MONTEE_2        9 // STATUS_MONTEE_1      + délai N°3                     // Position[6]
+  #define STATUS_BUNT           10 // STATUS_MONTEE_2      + délai N°4                     // Position[7]
+  #define STATUS_PLANE_1        11 // STATUS_BUNT          + délai N°5                     // Position[8]
+  #define STATUS_PLANE_2        12 // STATUS_PLANE_1       + délai N°6                     // Position[9]
+  #define STATUS_DT             13 // STATUS_PLANE_2       + délai N°7                     // Position[10]
+  //retour STATUS_PARC           0 // STATUS_DT            + délai N°8                     // Position[0]
   // Délai N°9 = futur délai de refermeture pour crochet piloté par servo
 
   // Positions possibles des servos
@@ -135,6 +151,12 @@
   #define POSITION_PLANE_1        8
   #define POSITION_PLANE_2        9
   #define POSITION_DT            10
+
+  // Action crochet
+  #define OUVERTURE 0
+  #define FERMETURE 1
+  #define CROCHET_OUVERT 0
+  #define CROCHET_FERME  1
 
   //----------------------------------------------------------------------------------------------------
   // Variables globales
@@ -153,14 +175,16 @@
   extern bool wifiIsSlepping;
   
   // positions servos et délais
-  #define NB_DELAI     10
-  #define NB_SERVOS     3
+  #define NB_DELAI     11
+  #define NB_SERVOS     4
+  #define SERVO_CROCHET 3 // Numéro du servo de crochet
   #define NB_POSITIONS 11
   #define NB_CONFIG     4
   extern unsigned int delai[NB_DELAI];        // On stockeras en centièmes de secondes
-  extern int pservo[NB_SERVOS][NB_POSITIONS]; // Position des 3 servos (11 positions)
-  extern int cservo[NB_SERVOS][NB_CONFIG];    // Configuration limites servos 3 x valeur prog min, valeur prog max,
-                                                       // microseconds min, microsecond max.
+  extern int pservo[NB_SERVOS][NB_POSITIONS]; // Position des 4 servos (11 positions)
+  extern int cservo[NB_SERVOS][NB_CONFIG];    // Configuration limites servos 3 x valeur :
+                                              // prog min, valeur prog max,
+                                              // microseconds min, microsecond max.
   #define DESCRIPTION_LEN 64
   extern char description[DESCRIPTION_LEN];
 
@@ -191,17 +215,20 @@
   #define TELNET_PORT 23
   extern ESPTelnet telnet;
   // Objets Servos
-  extern Servo servo[3]; // Variable globale servos
+  extern Servo servo[NB_SERVOS]; // Variable globale servos
   // Gestion port série
   #define SERIAL_BUFF_LEN 256
   extern char serialInput[SERIAL_BUFF_LEN];  // a String to hold incoming Serial data
-  extern int  serialPointer;                 // last character counter of Serial data
+  extern int unsigned serialPointer;         // last character counter of Serial data
   extern bool serialComplete;                // whether the string is complete
   // Statut de la minuterie
   extern int timerStatus;
-  extern uint8_t crochet[2];
+  extern uint8_t crochet[2];                 // Switchs du crochet
   extern volatile bool recuExternRDT;
   extern unsigned long dureeBoucle;
+  extern int crochetStatus;
+  extern unsigned long tStartOpen;
+  extern unsigned long tStartClose;
   // Flasher
   extern bool flash_verrou;
   extern bool flash_vol_on;
@@ -216,8 +243,10 @@
   void readSerial(void);
   void processSerial(void);
   connexion getConnexion(const char* chaine);
-  void setServoPos(unsigned int servoNum, int servoPos);
   void servoTest(unsigned int mode, unsigned int servoNum, int limit1, int limit2, int pwm1, int pwm2, int val);
+  void setServoPos(unsigned int servoNum, int servoPos);
+  void ouvreCrochet(void);
+  void fermeCrochet(void);
   float getTension();
   String getStatusText(const int status);
   void IRAM_ATTR externRDT(void);

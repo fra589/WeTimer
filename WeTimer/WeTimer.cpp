@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
 /* This file: WeTimer.cpp is part of WeTimer                                */
 /*                                                                          */
@@ -31,6 +31,9 @@ void readSerial(void) {
       serialComplete = true;
       if (telnet.isConnected()) telnet.printf("%s", serialInput);
       WT_PRINTF("\n");
+    } else if ((inChar == '\b') || (inChar == 127)){
+      // Retour arrière ou del
+      serialInput[--serialPointer] = '\0';
     } else {
       // add it to the inputString:
       serialInput[serialPointer++] = inChar;
@@ -41,11 +44,11 @@ void readSerial(void) {
 void processSerial(void) {
   readSerial();
   if (serialComplete) {
-    
+
     #ifdef DEBUG_2
-      WT_PRINTF("processSerial() : serialInput = <%s>\n", serialInput);
+      WT_PRINTF("processSerial() : serialInput = <%s>, longueur = %d\n", serialInput, strlen(serialInput));
     #endif
-    
+
     if ((strncmp(serialInput, "help", 4) == 0) || ((strlen(serialInput) == 1) && (serialInput[0] == '?'))) {
       //----------------------------------------------------------------
       WT_PRINTF("reboot .................. : Redémarre la minuterie\n");
@@ -62,6 +65,8 @@ void processSerial(void) {
       WT_PRINTF("boucle .................. : affiche le temps d'exécution de la boucle loop()\n");
       WT_PRINTF("millis .................. : affiche le temps millis()\n");
       WT_PRINTF("flash <0|1|2|3> ......... : Active le flash en mode <off|power|deverrouillé|vol>\n");
+      WT_PRINTF("crochet <0|1> ........... : Ouvre|Ferme le crochet\n");
+      WT_PRINTF("dt .......................: Déthermalise\n");
       WT_PRINTF("Web services : getversion, getstatus, getconfig, setconfig,\n");
       WT_PRINTF("               gettempvol, settempvol, getservoconfig, setservoconfig,\n");
       WT_PRINTF("               servotest, servopos, getbatterie, rdt, getjson, uploadconfig,\n");
@@ -82,9 +87,11 @@ void processSerial(void) {
 
     } else if (strncmp(serialInput, "status", 6) == 0) {
       //----------------------------------------------------------------
+      WT_PRINTF("\n%s version %s © %s.\n\n", APP_NAME, APP_VERSION_STRING, COPYRIGHT);
       WT_PRINTF("cli_ssid.................. = %s\n", cli_ssid);
       WT_PRINTF("cli_pwd................... = %s\n", cli_pwd);
       if (WiFi.status() == WL_CONNECTED) {
+        WT_PRINTF("Client MAC address........ = %s\n", WiFi.macAddress().c_str());
         WT_PRINTF("Client IP................. = %s\n", WiFi.localIP().toString().c_str());
         WT_PRINTF("Client gateway IP......... = %s\n", WiFi.gatewayIP().toString().c_str());
         WT_PRINTF("mDNS status............... = %s\n", MDNS.isRunning() ? "RUNNING" : "NOT RUNNING");
@@ -92,12 +99,13 @@ void processSerial(void) {
         WT_PRINTF("WiFi not connected.\n");
       }
       WT_PRINTF("\nWiFi access point:\n");
+      WT_PRINTF("AP MAC address............ = %s\n", WiFi.softAPmacAddress().c_str());
       WT_PRINTF("ap_ssid................... = %s\n", ap_ssid);
       WT_PRINTF("ap_pwd.................... = %s\n", ap_pwd);
       WT_PRINTF("description............... = %s\n", description);
       apListClients();
       WT_PRINTF("\nTimer status:\n");
-      WT_PRINTF("Status en cours........... = %s\n", getStatusText(timerStatus));
+      WT_PRINTF("Status en cours........... = %s\n", getStatusText(timerStatus).c_str());
       WT_PRINTF("Etat du switch crochet n°1 = %s\n", (crochet[0] == SWITCH_ON) ? "SWITCH_ON" : "SWITCH_OFF");
       WT_PRINTF("Etat du switch crochet n°2 = %s\n", (crochet[1] == SWITCH_ON) ? "SWITCH_ON" : "SWITCH_OFF");
 
@@ -195,6 +203,21 @@ void processSerial(void) {
         WT_PRINTF("Les modes valides sont : 0: off, 1: power, 2: deverrouillage et 3: vol\n");
       }
 
+    } else if ((strlen(serialInput) >= 7) && (strncmp(serialInput, "crochet", 7) == 0)) {
+      //----------------------------------------------------------------
+      if        ((strlen(&serialInput[8]) == 1) && (serialInput[8] == '0')) {
+        ouvreCrochet();
+      } else if ((strlen(&serialInput[8]) == 1) && (serialInput[8] == '1')) {
+        fermeCrochet();
+      } else {
+        WT_PRINTF("Fonction crochet invalide (%s).\n", &serialInput[8]);
+        WT_PRINTF("Les modes valides sont : 0 = Ouvert, 1 = Fermé.\n");
+      }
+
+    } else if ((strlen(serialInput) == 2) && (strncmp(serialInput, "dt", 2) == 0)) {
+      //----------------------------------------------------------------
+      runDT();
+
     } else {
       //----------------------------------------------------------------
       if (serialInput[0] != '\0') {
@@ -241,6 +264,22 @@ connexion getConnexion(const char* chaine) {
   }
   return result;
 }
+void servoTest(unsigned int mode, unsigned int servoNum, int limit1, int limit2, int pwm1, int pwm2, int val) {
+
+  // Teste la config d'un servo
+  WT_PRINTF("Entrée dans servoTest(%u, %u, %u, %u, %u, %u, %u)\n", mode , servoNum, limit1, limit2, pwm1, pwm2, val);
+  // Positionne le servo à la valeur à tester
+  if (mode == 0) { // Mode valeur de programmation minuterie
+    servo[servoNum].writeMicroseconds(map(val, limit1, limit2, pwm1, pwm2));
+  } else {
+    servo[servoNum].writeMicroseconds(val);
+  }
+  WT_PRINTF("servoTest() : servo positionné\n");
+  // Attend un peu
+  delay(10);
+  yield();
+
+}
 void setServoPos(unsigned int servoNum, int servoPos) {
 
   // Positionnement d'un servo en tenant compte de la configuration d'échelle
@@ -260,7 +299,7 @@ void setServoPos(unsigned int servoNum, int servoPos) {
     #endif
     return;
   }
-  if ((servoPos <0) || (servoNum >= NB_POSITIONS)) {
+  if ((servoPos <0) || (servoPos >= NB_POSITIONS)) {
     #ifdef DEBUG
       WT_PRINTF("setServoPos(%u, %u) : ERREUR servoPos !!!", servoNum, servoPos);
     #endif
@@ -276,21 +315,19 @@ void setServoPos(unsigned int servoNum, int servoPos) {
   servo[servoNum].writeMicroseconds(theMap);
 
 }
-void servoTest(unsigned int mode, unsigned int servoNum, int limit1, int limit2, int pwm1, int pwm2, int val) {
-
-  // Teste la config d'un servo
-  WT_PRINTF("Entrée dans servoTest(%u, %u, %u, %u, %u, %u, %u)\n", mode , servoNum, limit1, limit2, pwm1, pwm2, val);
-  // Positionne le servo à la valeur à tester
-  if (mode == 0) { // Mode valeur de programmation minuterie
-    servo[servoNum].writeMicroseconds(map(val, limit1, limit2, pwm1, pwm2));
-  } else {
-    servo[servoNum].writeMicroseconds(val);
-  }
-  WT_PRINTF("servoTest() : servo positionné\n");
-  // Attend un peu
-  delay(10);
-  yield();
-
+void ouvreCrochet(void) {
+  #ifdef DEBUG
+    WT_PRINTF("ouvreCrochet() : Ouverture du crochet, position servo[%d][%d] = %d\n", SERVO_CROCHET, CROCHET_OUVERT, pservo[SERVO_CROCHET][CROCHET_OUVERT]);
+  #endif
+  setServoPos(SERVO_CROCHET, CROCHET_OUVERT);
+  crochetStatus = CROCHET_OUVERT;
+}
+void fermeCrochet(void) {
+  #ifdef DEBUG
+    WT_PRINTF("fermeCrochet() : Fermeture du crochet, position servo[%d][%d] = %d\n", SERVO_CROCHET, CROCHET_FERME, pservo[SERVO_CROCHET][CROCHET_FERME]);
+  #endif
+  setServoPos(SERVO_CROCHET, CROCHET_FERME);
+  crochetStatus  = CROCHET_FERME;
 }
 float getTension() {
   // Lecture du convertisseur analogique / numérique
@@ -310,6 +347,7 @@ String getStatusText(const int status) {
     "ARMEMENT",
     "TREUIL_MONTEE",
     "TREUIL_VIRAGE",
+    "PRE_OUVERTURE",
     "DEVERROUILLE",
     "LARGUE",
     "PITCHUP",
@@ -323,13 +361,15 @@ String getStatusText(const int status) {
   return String(tblStatusText[status]);
 }
 void IRAM_ATTR externRDT(void) {
-    // TODO Code à écrire;
+    // On a reçu un signal RDT
     recuExternRDT = true;
 }
 void runDT(void) {
   // On commence par l'action sur les servos
   for (int i=0; i<NB_SERVOS; i++) {
-    setServoPos(i, POSITION_DT);
+    if (i != SERVO_CROCHET) {
+      setServoPos(i, POSITION_DT);
+    }
   }
 
   // Mise à jour de l'instant pour revenir au mode PARC en cas de RDT
@@ -386,6 +426,7 @@ void ls(String path) {
   // Liste les fichiers sur la partie Littlefs
   Dir dir;
   File f;
+  FSInfo fsinfo;
   dir = LittleFS.openDir(path);
   if (dir.isDirectory()) {
     WT_PRINTF("d %s\n",dir.fileName().c_str());
@@ -394,6 +435,18 @@ void ls(String path) {
     WT_PRINTF("- %s%s\t%d\n", path.c_str(), dir.fileName().c_str(), dir.fileSize());
     if (dir.isDirectory()) {
       ls(path + dir.fileName() + "/");
+    }
+  }
+  if (path == "/") {
+    if (LittleFS.info(fsinfo)) {
+      WT_PRINTF("-------\n");
+      WT_PRINTF("LittleFS : %d octets utilisés sur %d\n", fsinfo.usedBytes, fsinfo.totalBytes);
+      /*
+      WT_PRINTF("Taille bloc          = %d\n", fsinfo.blockSize);
+      WT_PRINTF("Taille page          = %d\n", fsinfo.pageSize);
+      WT_PRINTF("Fichiers ouverts max = %d\n", fsinfo.maxOpenFiles);
+      WT_PRINTF("Longueur chemin max  = %d\n", fsinfo.maxPathLength);
+      */
     }
   }
   yield();

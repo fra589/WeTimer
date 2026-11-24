@@ -1,15 +1,15 @@
 /****************************************************************************/
 /*                                                                          */
-/* Copyright (C) 2021-2025 Gauthier Brière (gauthier.briere "at" gmail.com) */
+/* Copyright (C) 2021-2026 Gauthier Brière (gauthier.briere "at" gmail.com) */
 /*                                                                          */
-/* This file: webserver.cpp is part of WeTimer / WeDT                       */
+/* This file: webserver.cpp is part of WeTimer                              */
 /*                                                                          */
-/* WeTimer / WeDT is free software: you can redistribute it and/or modify   */
+/* WeTimer is free software: you can redistribute it and/or modify          */
 /* it under the terms of the GNU General Public License as published by     */
 /* the Free Software Foundation, either version 3 of the License, or        */
 /* (at your option) any later version.                                      */
 /*                                                                          */
-/* WeTimer / WeDT is distributed in the hope that it will be useful, but    */
+/* WeTimer is distributed in the hope that it will be useful, but           */
 /* WITHOUT ANY WARRANTY; without even the implied warranty of               */
 /* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            */
 /* GNU General Public License for more details.                             */
@@ -60,6 +60,8 @@ void webServerInit(void) {
   server.on("/servopos",         handleServoTest);
   server.on("/getbatterie",      handleGetBatterie);
   server.on("/rdt",              handleRDT);
+  server.on("/ouvrecrochet",     handleOuvreCrochet);
+  server.on("/fermecrochet",     handleFermeCrochet);
   server.on("/getjson",          handleGetJson);
   server.on("/uploadconfig",     handleUpload);
   server.on("/setapconfig",      handleSetApConfig);
@@ -859,6 +861,60 @@ void handleRDT(void) {
   #endif
 
 }
+void handleOuvreCrochet(void) {
+
+  String XML;
+
+  #ifdef DEBUG_WEB
+    WT_PRINTF("Entrée dans handleOuvreCrochet()\n");
+  #endif
+
+  // Ouverture du crochet
+  ouvreCrochet();
+  #ifdef DEBUG_WEB
+    WT_PRINTF("handleOuvreCrochet() - Crochet ouvert.\n");
+  #endif
+
+  // Renvoi la réponse au client http
+  XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+  XML += F("<WeTimer>\n");
+  XML += F("  <result>OK</result>\n");
+  XML += F("</WeTimer>\n");
+
+  server.send(200, "text/xml", XML);
+
+  #ifdef DEBUG_WEB
+    WT_PRINTF("handleOuvreCrochet() : OK envoyé.\n");
+  #endif
+
+}
+void handleFermeCrochet(void) {
+
+  String XML;
+
+  #ifdef DEBUG_WEB
+    WT_PRINTF("Entrée dans handleCrochet()\n");
+  #endif
+
+  // Fermeture du crochet
+  fermeCrochet();
+  #ifdef DEBUG_WEB
+    WT_PRINTF("handleFermeCrochet() - Crochet fermé.\n");
+  #endif
+
+  // Renvoi la réponse au client http
+  XML  = F("<?xml version=\"1.0\" encoding=\"UTF-8\"\?>\n");
+  XML += F("<WeTimer>\n");
+  XML += F("  <result>OK</result>\n");
+  XML += F("</WeTimer>\n");
+
+  server.send(200, "text/xml", XML);
+
+  #ifdef DEBUG_WEB
+    WT_PRINTF("handleFermeCrochet() : OK envoyé.\n");
+  #endif
+
+}
 void handleGetJson(void) {
 
   char buff[8];
@@ -1090,7 +1146,7 @@ void handleUpload(void) {
     if (!erreur) {
       const char* tableauFlash = doc["flash"];
       #ifdef DEBUG_WEB_2
-        WT_PRINTF("tableauFlash = %s\n", data);
+        WT_PRINTF("tableauFlash = %s\n", tableauFlash);
       #endif
       // Deserialization tableau flash
       error = deserializeJson(arr, tableauFlash);
