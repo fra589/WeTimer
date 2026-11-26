@@ -1063,7 +1063,9 @@ function servoOK() {
     // Met à jour les valeurs dans le tableau
     cellId = "servo_" + String(sNum) + "_" + String(i);
     cellule = document.getElementById(cellId);
-    cellule.innerText = pServo[sNum][i];
+    if (cellule !== null) {
+      cellule.innerText = pServo[sNum][i];
+    }
   }
   // Envoi la mise à jour à la minuterie
   XMLHttpRequest_post("/setservoconfig");
